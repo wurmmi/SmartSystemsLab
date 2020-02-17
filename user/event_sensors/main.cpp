@@ -1,6 +1,4 @@
 #include <mqtt/client.h>
-#include <mqtt/ssl_options.h>
-#include <mqtt/connect_options.h>
 #include <zlib.h>
 
 #include <algorithm>
@@ -145,7 +143,7 @@ std::optional<std::string> getTrustStore(const std::string &certPath)
 
 
 int main(int argc, char *argv[]) {
-    static const std::string SERVER_URI = "ssl://193.170.192.224:8883";
+    static const std::string SERVER_URI = "193.170.192.224:1883";
     static const std::string CLIENT_ID  = "event_sensors";
     static const int DEFAULT_THRESHOLD = 12000;
 
@@ -193,18 +191,7 @@ int main(int argc, char *argv[]) {
     // Setup MQTT client
     //
     mqtt::client client(SERVER_URI, CLIENT_ID);
-    mqtt::ssl_options sslOptions;
-    auto trustStoreOpt = getTrustStore("ca.crt");
-    if (!trustStoreOpt.has_value()) {
-        return -1;
-    }
-    sslOptions.set_trust_store(trustStoreOpt.value());
-
-    mqtt::connect_options options;
-    options.set_ssl(sslOptions);
-
-    client.connect(options);
-
+    client.connect();
 
     //
     // Setup sensors
