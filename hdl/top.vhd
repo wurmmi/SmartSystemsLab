@@ -19,6 +19,9 @@ PORT(
     HEX4                : out   std_logic_vector(6 downto 0);
     HEX5                : out   std_logic_vector(6 downto 0);
 
+    -- //////////// Infrared Interface //////////
+    IRDA_RXD            : in    std_logic;
+    IRDA_TXD            : in    std_logic;
 
     ---------HPS Connections---------------
     HPS_CONV_USB_N      : inout std_logic;
