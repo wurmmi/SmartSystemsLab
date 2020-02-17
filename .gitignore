@@ -13,6 +13,7 @@ drivers/**/.tmp_versions/
 
 user/**/*.o
 user/show_ip/show_ip
+user/event_sensors/event_sensors
 user/streaming_sensors/streaming_sensors
 
 # ModelSim temporary files
