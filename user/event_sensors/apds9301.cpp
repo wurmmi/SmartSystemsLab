@@ -6,21 +6,23 @@
 
 #include "fpga.h"
 #include "tsu.h"
+#include "get_ip.h"
 
-struct APDS9301POD {
+struct APDS9301POD
+{
     uint32_t timestamp_lo;
     uint32_t timestamp_hi;
     uint16_t value;
 } __attribute__((packed));
 
-
-std::string APDS9301::getTopic() const {
+std::string APDS9301::getTopic() const
+{
     static const std::string TOPIC_NAME = "compressed/sensors/apds9301";
     return TOPIC_NAME;
 }
 
-
-void APDS9301::doProcess(APDS9301Data const &data) {
+void APDS9301::doProcess(APDS9301Data const &data)
+{
 #ifdef NO_SENSORS
     // nothing to process here
     return;
@@ -30,24 +32,39 @@ void APDS9301::doProcess(APDS9301Data const &data) {
     // dimm 7-segment display according to the latest light intensity
     //
 
-    static const int SEGMENT_COUNT            = 6;
+    static const int SEGMENT_COUNT = 6;
     static const std::string CHARACTER_DEVICE = "/dev/sevensegment";
 
-    uint8_t brightness            = data.value >> 8;
-    uint8_t values[SEGMENT_COUNT] = {0};
+    float scale = (float)data.value / UINT16_MAX;
+    uint8_t brightness = (uint8_t)(scale * UINT8_MAX);
+    if (brightness < 3)
+        brightness = 3;
+
+    getIPdata_t getIPdata = {0};
+    if (mIP_octet < 3)
+        mIP_octet++;
+    else
+        mIP_octet = 0;
+    memcpy(&getIPdata, get_ip(mIP_octet), sizeof(getIPdata_t));
 
     auto _lck = lockFPGA();
 
     // open character device
     auto fd = fopen(CHARACTER_DEVICE.c_str(), "wb");
-    if (!fd) {
+    if (!fd)
+    {
         std::cerr << "Failed to open character device '" << CHARACTER_DEVICE << "'" << std::endl;
         return;
     }
 
     // write display values
-    for (int i = 0; i < SEGMENT_COUNT; ++i) {
-        if (fputc(values[i], fd) == EOF) {
+    for (int i = 0; i < SEGMENT_COUNT; ++i)
+    {
+        // Convert to binary for driver
+        getIPdata.hex_values[i] -= '0';
+
+        if (fputc(getIPdata.hex_values[i], fd) == EOF)
+        {
             std::cerr << "Failed to write character (index " << i << ")" << std::endl;
             fclose(fd);
             return;
@@ -55,23 +72,26 @@ void APDS9301::doProcess(APDS9301Data const &data) {
     }
 
     // write brightness level
-    if (fputc(brightness, fd) == EOF) {
+    if (fputc(brightness, fd) == EOF)
+    {
         std::cerr << "Failed to write brightness level" << std::endl;
         fclose(fd);
         return;
     }
 
     // write enable bits
-    if (fputc(0xff, fd) == EOF) {
+    if (fputc(getIPdata.hex_enable, fd) == EOF)
+    {
         std::cerr << "Failed to write enable bits" << std::endl;
         fclose(fd);
         return;
     }
 
-    (void) fclose(fd);
+    (void)fclose(fd);
 }
 
-std::optional<APDS9301Data> APDS9301::doPoll() {
+std::optional<APDS9301Data> APDS9301::doPoll()
+{
 #ifdef NO_SENSORS
     static int c = 0;
 
@@ -86,9 +106,8 @@ std::optional<APDS9301Data> APDS9301::doPoll() {
     static const std::string CHARACTER_DEVICE = "/dev/apds9301";
 
     static const int READ_SIZE = sizeof(APDS9301POD);
-    APDS9301Data results {};
+    APDS9301Data results{};
     APDS9301POD pod = {};
-
 
     // lock fpga device using a lock guard
     // the result is never used, but it keeps the mutex locked until it goes out of scope
@@ -96,27 +115,30 @@ std::optional<APDS9301Data> APDS9301::doPoll() {
 
     // open character device
     auto fd = fopen(CHARACTER_DEVICE.c_str(), "rb");
-    if (!fd) {
+    if (!fd)
+    {
         std::cerr << "Failed to open character device '" << CHARACTER_DEVICE << "'" << std::endl;
         return {};
     }
 
-    if (fread(&pod, READ_SIZE, 1, fd) != 1) {
+    if (fread(&pod, READ_SIZE, 1, fd) != 1)
+    {
         std::cerr << "Failed to read sensor values" << std::endl;
         return {};
     }
 
-    auto timestamp = (((uint64_t) pod.timestamp_hi) << 32) | pod.timestamp_lo;
+    auto timestamp = (((uint64_t)pod.timestamp_hi) << 32) | pod.timestamp_lo;
     results.timeStamp = TimeStampingUnit::getResolvedTimeStamp(timestamp);
     results.value = pod.value;
 
     // close character device
-    (void) fclose(fd);
+    (void)fclose(fd);
 
     return std::make_optional(results);
 }
 
-std::string APDS9301Data::toJsonString() const {
+std::string APDS9301Data::toJsonString() const
+{
     std::stringstream ss;
     ss << "{";
     ss << "\"ambient_light\":" << value << ",";

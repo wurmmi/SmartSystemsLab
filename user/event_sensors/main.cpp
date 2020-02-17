@@ -22,6 +22,7 @@
 
 using namespace std::literals::chrono_literals;
 
+
 void compressMemory(void *in_data, size_t in_data_size, std::vector<uint8_t> &out_data)
 {
     std::vector<uint8_t> buffer;
@@ -219,7 +220,6 @@ int main(int argc, char *argv[])
     sensorThreads.emplace_back(std::bind(&HDC1000::startPolling, &hdc1000));
     sensorThreads.emplace_back(std::bind(&MPU9250::startPolling, &mpu9250));
     sensorThreads.emplace_back(std::bind(&APDS9301::startPolling, &apds9301));
-    sensorThreads.emplace_back(std::thread(show_ip));
 
     //
     // Every second publish all available sensor data at once

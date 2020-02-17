@@ -20,6 +20,9 @@ public:
 protected:
     std::optional<APDS9301Data> doPoll() override;
     void doProcess(APDS9301Data const &data) override;
+
+private:
+    int mIP_octet;
 };
 
 #endif  // APDS9301_H
