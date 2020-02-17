@@ -21,7 +21,6 @@
 
 using namespace std::literals::chrono_literals;
 
-
 void compressMemory(void *in_data, size_t in_data_size, std::vector<uint8_t> &out_data)
 {
     std::vector<uint8_t> buffer;
@@ -81,17 +80,20 @@ void publishData(const std::vector<DATA> &data, const std::string &topic, mqtt::
     // how many burst packets need to be sent?
     int bursts = std::ceil(1.0 * data.size() / MAX_PACKETS_PER_BURST);
 
-    for (int b = 0; b < bursts; b++) {
+    for (int b = 0; b < bursts; b++)
+    {
         // the size of the current burst packet
-        int size = std::min(MAX_PACKETS_PER_BURST, (int) data.size() - b * MAX_PACKETS_PER_BURST);
+        int size = std::min(MAX_PACKETS_PER_BURST, (int)data.size() - b * MAX_PACKETS_PER_BURST);
 
         msg.str("");
         msg << "[";
 
         bool first = true;
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < size; i++)
+        {
             auto &v = data[b * MAX_PACKETS_PER_BURST + i];
-            if (!first) {
+            if (!first)
+            {
                 msg << ",";
             }
             first = false;
@@ -108,8 +110,9 @@ void publishData(const std::vector<DATA> &data, const std::string &topic, mqtt::
     }
 }
 
-template<class SENSOR>
-void publishSensorData(SENSOR &sensor, mqtt::client &client) {
+template <class SENSOR>
+void publishSensorData(SENSOR &sensor, mqtt::client &client)
+{
     auto pollingData = sensor.getQueue();
     auto eventData = sensor.getEventQueue();
 
@@ -127,12 +130,14 @@ std::optional<std::string> getTrustStore(const std::string &certPath)
     static const std::string FALLBACK_CERT = "/etc/SmartSystemsLab/ca.crt";
 
     std::ifstream f(certPath);
-    if (f) {
+    if (f)
+    {
         return certPath;
     }
 
     f.open(FALLBACK_CERT);
-    if (f) {
+    if (f)
+    {
         std::cout << "Using fallback certificate" << std::endl;
         return FALLBACK_CERT;
     }
@@ -141,10 +146,10 @@ std::optional<std::string> getTrustStore(const std::string &certPath)
     return std::nullopt;
 }
 
-
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     static const std::string SERVER_URI = "193.170.192.224:1883";
-    static const std::string CLIENT_ID  = "event_sensors";
+    static const std::string CLIENT_ID = "event_sensors";
     static const int DEFAULT_THRESHOLD = 12000;
 
     //
@@ -152,23 +157,29 @@ int main(int argc, char *argv[]) {
     //
     int threshold = DEFAULT_THRESHOLD;
 
-    if (argc > 2) {
+    if (argc > 2)
+    {
         std::cerr << "Usage: " << argv[0] << " [<event_threshold>]" << std::endl;
         return -1;
-    } else if (argc == 2) {
-        try {
+    }
+    else if (argc == 2)
+    {
+        try
+        {
             size_t idx = 0;
             threshold = std::stoi(argv[1], &idx);
 
-            if (idx < strlen(argv[1])) {
+            if (idx < strlen(argv[1]))
+            {
                 throw std::invalid_argument(argv[1]);
             }
-        } catch (const std::invalid_argument &ex) {
+        }
+        catch (const std::invalid_argument &ex)
+        {
             std::cerr << "Argument '" << argv[1] << "' cannot be parsed as an integer" << std::endl;
             return -1;
         }
     }
-
 
     //
     // Check operation mode
@@ -176,16 +187,18 @@ int main(int argc, char *argv[]) {
 #ifndef NO_SENSORS
     std::cout << "Operation mode: actual sensors" << std::endl;
 
-    try {
+    try
+    {
         initFPGA("event_sensors");
-    } catch (const std::string &s) {
+    }
+    catch (const std::string &s)
+    {
         std::cerr << "Failed to initialize FPGA: " << s << std::endl;
         return -1;
     }
 #else
     std::cout << "Operation mode: dummy data" << std::endl;
 #endif
-
 
     //
     // Setup MQTT client
@@ -206,12 +219,12 @@ int main(int argc, char *argv[]) {
     sensorThreads.emplace_back(std::bind(&MPU9250::startPolling, &mpu9250));
     sensorThreads.emplace_back(std::bind(&APDS9301::startPolling, &apds9301));
 
-
     //
     // Every second publish all available sensor data at once
     //
     auto iterationEnd = std::chrono::high_resolution_clock::now();
-    while (true) {
+    while (true)
+    {
         iterationEnd += std::chrono::milliseconds(1000);
 
         // std::cout << "HDC1000: ";
@@ -231,7 +244,8 @@ int main(int argc, char *argv[]) {
     mpu9250.stop();
     apds9301.stop();
 
-    for (auto &&t: sensorThreads) {
+    for (auto &&t : sensorThreads)
+    {
         t.join();
     }
     return 0;
