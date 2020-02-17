@@ -4,12 +4,12 @@
 
 #include <cstdio>
 #include <cstdint>
+#include <cstring>
 
 #include <iostream>
 #include <string>
 #include <thread>
 #include <chrono>
-#include <memory>
 
 using namespace std::literals::chrono_literals;
 
@@ -160,10 +160,11 @@ void show_ip()
       snprintf(chars, 6, "%d", s);
 
       uint8_t brightness = getBrightness();
+      std::cout << "Brightness: " << brightness << std::endl;
 
       (void)writeToCDev(chars, brightness);
 
-      std::this_thread::sleep_for(1000ms);
+      std::this_thread::sleep_for(500ms);
     }
   }
 }

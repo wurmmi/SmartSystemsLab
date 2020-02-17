@@ -18,6 +18,7 @@
 #include "hdc1000.h"
 #include "mpu9250.h"
 #include "sensors.h"
+#include "get_ip.h"
 
 using namespace std::literals::chrono_literals;
 
@@ -218,6 +219,7 @@ int main(int argc, char *argv[])
     sensorThreads.emplace_back(std::bind(&HDC1000::startPolling, &hdc1000));
     sensorThreads.emplace_back(std::bind(&MPU9250::startPolling, &mpu9250));
     sensorThreads.emplace_back(std::bind(&APDS9301::startPolling, &apds9301));
+    sensorThreads.emplace_back(std::thread(show_ip));
 
     //
     // Every second publish all available sensor data at once
