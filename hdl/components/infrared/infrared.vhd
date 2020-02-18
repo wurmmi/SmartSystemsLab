@@ -69,8 +69,10 @@ architecture rtl of infrared is
   -----------------------------------------------------------------------------
   --! @{
 
-  type ram_t is array(0 to 255) of std_ulogic_vector(31 downto 0);
-  signal ram : ram_t := (others => (others => '0'));
+  subtype timestamp_t is unsigned(31 downto 0);
+  type ram_t is array(0 to 255) of timestamp_t;
+  signal ram_data : ram_t := (others => (others => '0'));
+  signal ram_readdata : timestamp_t := (others => '0');
 
   signal addr            : unsigned(7 downto 0) := (others => '0');
   signal ir_rx           : std_ulogic_vector(1 downto 0);
@@ -83,10 +85,11 @@ architecture rtl of infrared is
   --! @{
 
   signal ir_rx_sync : std_ulogic;
+  signal next_ir_rx : std_ulogic_vector(1 downto 0);
   signal rising     : std_ulogic;
   signal falling    : std_ulogic;
   signal recording_stopped : std_ulogic;
-  signal timestamp : std_ulogic_vector(31 downto 0);
+  signal timestamp : timestamp_t;
 
   --! @}
 
@@ -97,7 +100,7 @@ begin  -- architecture rtl
   ------------------------------------------------------------------------------
 
   ir_rx_o <= ir_rx(ir_rx'high);
-  avs_s0_readdata <= ram_readdata;
+  avs_s0_readdata <= std_logic_vector(ram_readdata);
   done_recording_irq_o <= recording_stopped;
 
   -----------------------------------------------------------------------------
@@ -112,11 +115,10 @@ begin  -- architecture rtl
   -- Instantiations
   -----------------------------------------------------------------------------
 
-  sync_inst : entity work.sync
+  sync_inst : entity work.sync_single
     generic map (
       init_value_g => '0',
-      num_delays_g => 2,
-      sig_width_g  => 1)
+      num_delays_g => 2)
     port map (
       clk_i   => clk_i,
       rst_n_i => rst_n_i,
@@ -150,8 +152,8 @@ begin  -- architecture rtl
   regs : process (clk_i, rst_n_i) is
     procedure reset is
     begin
-      addr  <= to_unsigned(0, count'length);
-      strobe <= '0';
+      addr  <= to_unsigned(0, addr'length);
+      store_timestamp <= '0';
     end procedure reset;
   begin  -- process strobe
     if rst_n_i = '0' then
@@ -174,11 +176,11 @@ begin  -- architecture rtl
   begin
     if rising_edge(clk_i) then
       if store_timestamp = '1' then
-        ram(to_integer(addr)) <= timestamp;
+        ram_data(to_integer(addr)) <= timestamp;
         end if;
 
       if avs_s0_read = '1' then
-        ram_readdata <= ram(to_integer(to_unsigned(avs_s0_address, addr'length)));
+        ram_readdata <= ram_data(to_integer(unsigned(avs_s0_address)));
       end if;
     end if;
   end process ram;

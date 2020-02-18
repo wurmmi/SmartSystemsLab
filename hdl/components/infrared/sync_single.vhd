@@ -1,22 +1,21 @@
 -------------------------------------------------------------------------------
---! @file      counter.vhd
+--! @file      sync_single.vhd
 --! @author    Michael Wurm <wurm.michael95@gmail.com>
 --! @copyright 2020 Michael Wurm
---! @brief     Entity implementation of counter.
+--! @brief     Implementation of sync_single.
 -------------------------------------------------------------------------------
 
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
 
---! @brief Entity declaration of counter
+--! @brief Entity declaration of sync_single
 --! @details
---! Provides a counter value of clock ticks of clk_i.
---! The counter is free-running, and thus overflows at its maximum.
+--! The sync_single implementation.
 
-entity counter is
+entity sync_single is
   generic (
-    counter_width_g : natural := 31);
+    init_value_g : std_ulogic := '0';
+    num_delays_g : natural    := 2);
   port (
     --! @name Clocks and resets
     --! @{
@@ -27,29 +26,26 @@ entity counter is
     rst_n_i : in std_logic;
 
     --! @}
-    --! @name Control and status signals
+    --! @name Sync signals
     --! @{
 
-    --! Enable
-    enable_i : in  std_ulogic;
-    --! Overflow
-    overflow_o : out std_ulogic;
-    --! Generated strobe
-    count_o : out unsigned(counter_width_g-1 downto 0));
+    --! Asynchronous input
+    async_i : in  std_ulogic;
+    --! Synchronous output
+    sync_o  : out std_ulogic);
 
   --! @}
 
-end entity counter;
+end entity sync_single;
 
---! RTL implementation of counter
-architecture rtl of counter is
+--! RTL implementation of sync_single
+architecture rtl of sync_single is
   -----------------------------------------------------------------------------
   --! @name Internal Registers
   -----------------------------------------------------------------------------
   --! @{
 
-  signal count : unsigned(count_o'range);
-  signal overflow : std_ulogic := '0';
+  signal delay : std_ulogic_vector(num_delays_g-1 downto 0) := (others => '0');
 
   --! @}
   -----------------------------------------------------------------------------
@@ -57,6 +53,7 @@ architecture rtl of counter is
   -----------------------------------------------------------------------------
   --! @{
 
+  signal next_delay : std_ulogic_vector(delay'range);
 
   --! @}
 
@@ -66,38 +63,28 @@ begin  -- architecture rtl
   -- Outputs
   ------------------------------------------------------------------------------
 
-  count_o    <= count;
-  overflow_o <= overflow;
+  sync_o <= delay(delay'high);
 
   -----------------------------------------------------------------------------
   -- Signal Assignments
   -----------------------------------------------------------------------------
 
+  next_delay <= delay(delay'high-1 downto delay'low) & async_i;
+
   ------------------------------------------------------------------------------
   -- Registers
   ------------------------------------------------------------------------------
 
-  regs : process (clk_i, rst_n_i) is
+  regs : process(clk_i, rst_n_i)
     procedure reset is
     begin
-      count <= to_unsigned(0, count'length);
-      overflow <= '0';
+      delay <= (others => init_value_g);
     end procedure reset;
   begin  -- process regs
     if rst_n_i = '0' then
       reset;
     elsif rising_edge(clk_i) then
-      -- Defaults
-      overflow <= '0';
-
-      if enable_i = '0' then
-        reset;
-      else
-        count <= count + 1;
-        if count = 2**count'length-1 then
-          overflow <= '1';
-        end if;
-      end if;
+      delay <= next_delay;
     end if;
   end process regs;
 
