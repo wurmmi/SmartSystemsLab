@@ -5,20 +5,7 @@ Libraries:
     - name: work
     #The paths where the source files for this library can be found. Use "**" to match arbitrarily nested directories.
       paths:
-        - ".vhd"
-
-
-    - name: hardware_lib2
-      paths:
-        - "hardware_lib2/**/*.vhd"
-        - "hardware_lib2/**/*.vhdl"
-
-
-    #Point to the IEEE standard libraries
-    - name: ieee
-      paths:
-        - "/home/awesome-vhdl-dev/ieee/*.vhd"
-        - "/home/awesome-vhdl-dev/ieee/*.vhdl"
+        - "**/infrared/*.vhd"
 
 #Enable/disable typechecking
 TypeCheck: True
