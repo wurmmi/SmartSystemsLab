@@ -11,7 +11,8 @@ use ieee.numeric_std.all;
 
 --! @brief Entity declaration of infrared
 --! @details
---! TODO
+--! Stores timestamps on every change of the IR LED input.
+--! In that way, a sequence can be recorded and reproduced afterwards.
 
 entity infrared is
   port (
@@ -46,6 +47,8 @@ entity infrared is
     --! @name Status signals
     --! @{
 
+    --! Done recording interrupt
+    done_recording_irq_o : out std_ulogic;
     --! IR Receive Mirror
     ir_rx_o : out std_ulogic);
 
@@ -82,6 +85,7 @@ architecture rtl of infrared is
   signal ir_rx_sync : std_ulogic;
   signal rising     : std_ulogic;
   signal falling    : std_ulogic;
+  signal recording_stopped : std_ulogic;
   signal timestamp : std_ulogic_vector(31 downto 0);
 
   --! @}
@@ -94,6 +98,7 @@ begin  -- architecture rtl
 
   ir_rx_o <= ir_rx(ir_rx'high);
   avs_s0_readdata <= ram_readdata;
+  done_recording_irq_o <= recording_stopped;
 
   -----------------------------------------------------------------------------
   -- Signal Assignments
@@ -101,7 +106,7 @@ begin  -- architecture rtl
 
   next_ir_rx <= ir_rx(ir_rx'high-1 downto ir_rx'low) & ir_rx_sync;
   rising     <= '1' when ir_rx(1)='0' and ir_rx(0)='1' else '0';
-  falling    <= not rising;
+  falling    <= '1' when ir_rx(1)='1' and ir_rx(0)='0' else '0';
 
   -----------------------------------------------------------------------------
   -- Instantiations
@@ -118,12 +123,25 @@ begin  -- architecture rtl
       async_i => ir_rx_i,
       sync_o  => ir_rx_sync);
 
-  counter_inst : entity work.counter
-    port map (
-      clk_i   => clk_i,
-      rst_n_i => rst_n_i,
-      enable_i => '1',
-      count_o  => timestamp);
+  timestamp_counter_inst : entity work.counter
+    generic map (
+      counter_width_g => 31)
+      port map (
+        clk_i   => clk_i,
+        rst_n_i => rst_n_i,
+        enable_i => '1',
+        overflow_o => open,
+        count_o  => timestamp);
+
+  stop_counter_inst : entity work.counter
+    generic map (
+      counter_width_g => 25) -- 2^25 steps @ 100MHz => 0.3355 sec
+      port map (
+        clk_i   => clk_i,
+        rst_n_i => rst_n_i,
+        enable_i => falling,
+        overflow_o => recording_stopped,
+        count_o  => timestamp);
 
   ------------------------------------------------------------------------------
   -- Registers
@@ -146,6 +164,8 @@ begin  -- architecture rtl
       if rising = '1' or falling = '1' then
         addr <= addr + 1;
         store_timestamp <= '1';
+      elsif recording_stopped = '1' then
+        addr <= (others => '0');
       end if;
     end if;
   end process regs;

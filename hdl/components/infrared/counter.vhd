@@ -15,6 +15,8 @@ use ieee.numeric_std.all;
 --! The counter is free-running, and thus overflows at its maximum.
 
 entity counter is
+  generic (
+    counter_width_g : natural := 31);
   port (
     --! @name Clocks and resets
     --! @{
@@ -25,13 +27,15 @@ entity counter is
     rst_n_i : in std_logic;
 
     --! @}
-    --! @name Control signals
+    --! @name Control and status signals
     --! @{
 
     --! Enable
     enable_i : in  std_ulogic;
+    --! Overflow
+    overflow_o : out std_ulogic;
     --! Generated strobe
-    count_o : out std_ulogic_vector(31 downto 0));
+    count_o : out std_ulogic_vector(counter_width_g-1 downto 0));
 
   --! @}
 
@@ -45,6 +49,7 @@ architecture rtl of counter is
   --! @{
 
   signal count : unsigned(count_o'range);
+  signal overflow : std_ulogic := '0';
 
   --! @}
   -----------------------------------------------------------------------------
@@ -61,7 +66,8 @@ begin  -- architecture rtl
   -- Outputs
   ------------------------------------------------------------------------------
 
-  count_o <= count;
+  count_o    <= count;
+  overflow_o <= overflow;
 
   -----------------------------------------------------------------------------
   -- Signal Assignments
@@ -75,15 +81,22 @@ begin  -- architecture rtl
     procedure reset is
     begin
       count <= to_unsigned(0, count'length);
+      overflow <= '0';
     end procedure reset;
-  begin  -- process strobe
+  begin  -- process regs
     if rst_n_i = '0' then
       reset;
     elsif rising_edge(clk_i) then
+      -- Defaults
+      overflow <= '0';
+
       if enable_i = '0' then
         reset;
       else
         count <= count + 1;
+        if count = 2**count'length-1 then
+          overflow <= '1';
+        end if;
       end if;
     end if;
   end process regs;
