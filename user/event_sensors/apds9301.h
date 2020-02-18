@@ -3,15 +3,16 @@
 
 #include "sensors.h"
 
-
-struct APDS9301Data : public Serializable {
+struct APDS9301Data : public Serializable
+{
     std::string toJsonString() const override;
 
     uint64_t timeStamp;
     uint16_t value;
 };
 
-class APDS9301 : public StreamingSensor<APDS9301Data> {
+class APDS9301 : public StreamingSensor<APDS9301Data>
+{
 public:
     using StreamingSensor::StreamingSensor;
 
@@ -20,6 +21,9 @@ public:
 protected:
     std::optional<APDS9301Data> doPoll() override;
     void doProcess(APDS9301Data const &data) override;
+
+private:
+    int mIP_octet = 0;
 };
 
-#endif  // APDS9301_H
+#endif // APDS9301_H
