@@ -39,18 +39,18 @@ entity infrared is
     --! @{
 
     --! IR Receive
-    ir_rx_i : in std_ulogic;
+    ir_rx_i : in std_logic;
     --! IR Transmit
-    ir_tx_o : out std_ulogic;
+    ir_tx_o : out std_logic;
 
     --! @}
     --! @name Status signals
     --! @{
 
     --! Done recording interrupt
-    done_recording_irq_o : out std_ulogic;
+    done_recording_irq_o : out std_logic;
     --! IR Receive Mirror
-    ir_rx_o : out std_ulogic);
+    ir_rx_o : out std_logic);
 
   --! @}
 

@@ -177,6 +177,19 @@
          type = "int";
       }
    }
+   element hmi.infrared_s0
+   {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
+      }
+      datum baseAddress
+      {
+         value = "2048";
+         type = "String";
+      }
+   }
    element hmi.leds_s1
    {
       datum _lockedAddress
@@ -378,6 +391,9 @@
   <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone V" />
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="6" />
   <parameter name="AUTO_GENERATION_ID" value="0" />
+  <parameter name="AUTO_INFRARED_CLK_I_CLOCK_DOMAIN" value="1" />
+  <parameter name="AUTO_INFRARED_CLK_I_CLOCK_RATE" value="50000000" />
+  <parameter name="AUTO_INFRARED_CLK_I_RESET_DOMAIN" value="1" />
   <parameter name="AUTO_LEDS_CLK_CLOCK_DOMAIN" value="1" />
   <parameter name="AUTO_LEDS_CLK_CLOCK_RATE" value="50000000" />
   <parameter name="AUTO_LEDS_CLK_RESET_DOMAIN" value="1" />
@@ -934,6 +950,15 @@
    kind="avalon"
    version="19.1"
    start="hps_0.h2f_lw_axi_master"
+   end="hmi.infrared_s0">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x0800" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="19.1"
+   start="hps_0.h2f_lw_axi_master"
    end="hmi.leds_s1">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0410" />
@@ -999,6 +1024,11 @@
    version="19.1"
    start="clk_0.clk"
    end="hps_0.h2f_lw_axi_clock" />
+ <connection
+   kind="clock"
+   version="19.1"
+   start="clk_0.clk"
+   end="hmi.infrared_clk_i" />
  <connection kind="clock" version="19.1" start="clk_0.clk" end="hmi.leds_clk" />
  <connection
    kind="clock"
@@ -1028,6 +1058,11 @@
    end="hmi.subsystemmpu9250_irq">
   <parameter name="irqNumber" value="0" />
  </connection>
+ <connection
+   kind="reset"
+   version="19.1"
+   start="clk_0.clk_reset"
+   end="hmi.infrared_rst_n_i" />
  <connection
    kind="reset"
    version="19.1"
