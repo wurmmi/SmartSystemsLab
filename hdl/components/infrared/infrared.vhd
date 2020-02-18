@@ -14,11 +14,6 @@ use ieee.numeric_std.all;
 --! TODO
 
 entity infrared is
-  generic (
-    --! System clock frequency
-    clk_freq_g : natural := clk_freq_c;
-    --! Period between two strobes
-    period_g   : time    := 100 us);
   port (
     --! @name Clocks and resets
     --! @{
@@ -29,23 +24,32 @@ entity infrared is
     rst_n_i : in std_logic;
 
     --! @}
-    --! @name Strobe signals
+    --! @name Avalon MM Bus
+    --! @{
+    avs_s0_address     : in  std_logic_vector(7 downto 0);
+    avs_s0_read        : in  std_logic;
+    avs_s0_readdata    : out std_logic_vector(31 downto 0);
+    avs_s0_write       : in  std_logic;
+    avs_s0_writedata   : in  std_logic_vector(31 downto 0);
+    avs_s0_waitrequest : out std_logic;
+
+    --! @}
+    --! @name Infrared transceiver signals
     --! @{
 
-    --! Enable
-    enable_i : in  std_ulogic;
-    --! Generated strobe
-    strobe_o : out std_ulogic);
+    --! IR Receive
+    ir_rx_i : in std_ulogic;
+    --! IR Transmit
+    ir_tx_o : out std_ulogic;
+
+    --! @}
+    --! @name Status signals
+    --! @{
+
+    --! IR Receive Mirror
+    ir_rx_o : out std_ulogic);
 
   --! @}
-
-begin
-
-  -- pragma translate_off
-  assert ((1 sec / clk_freq_g) <= period_g)
-    report "infrared: The Clk frequency is to low to generate such a short strobe cycle."
-    severity error;
-  -- pragma translate_on
 
 end entity infrared;
 
@@ -56,15 +60,18 @@ architecture rtl of infrared is
   -----------------------------------------------------------------------------
   --! @{
 
-  constant clks_per_strobe_c : natural := clk_freq_g / (1 sec / period_g);
-
   --! @}
   -----------------------------------------------------------------------------
   --! @name Internal Registers
   -----------------------------------------------------------------------------
   --! @{
 
-  signal count : unsigned(log_dualis(clks_per_strobe_c) downto 0);
+  type ram_t is array(0 to 255) of std_ulogic_vector(31 downto 0);
+  signal ram : ram_t := (others => (others => '0'));
+
+  signal addr            : unsigned(7 downto 0) := (others => '0');
+  signal ir_rx           : std_ulogic_vector(1 downto 0);
+  signal store_timestamp : std_ulogic;
 
   --! @}
   -----------------------------------------------------------------------------
@@ -72,7 +79,10 @@ architecture rtl of infrared is
   -----------------------------------------------------------------------------
   --! @{
 
-  signal strobe : std_ulogic;
+  signal ir_rx_sync : std_ulogic;
+  signal rising     : std_ulogic;
+  signal falling    : std_ulogic;
+  signal timestamp : std_ulogic_vector(31 downto 0);
 
   --! @}
 
@@ -82,35 +92,75 @@ begin  -- architecture rtl
   -- Outputs
   ------------------------------------------------------------------------------
 
-  strobe_o <= strobe;
+  ir_rx_o <= ir_rx(ir_rx'high);
+  avs_s0_readdata <= ram_readdata;
+
+  -----------------------------------------------------------------------------
+  -- Signal Assignments
+  -----------------------------------------------------------------------------
+
+  next_ir_rx <= ir_rx(ir_rx'high-1 downto ir_rx'low) & ir_rx_sync;
+  rising     <= '1' when ir_rx(1)='0' and ir_rx(0)='1' else '0';
+  falling    <= not rising;
+
+  -----------------------------------------------------------------------------
+  -- Instantiations
+  -----------------------------------------------------------------------------
+
+  sync_inst : entity work.sync
+    generic map (
+      init_value_g => '0',
+      num_delays_g => 2,
+      sig_width_g  => 1)
+    port map (
+      clk_i   => clk_i,
+      rst_n_i => rst_n_i,
+      async_i => ir_rx_i,
+      sync_o  => ir_rx_sync);
+
+  counter_inst : entity work.counter
+    port map (
+      clk_i   => clk_i,
+      rst_n_i => rst_n_i,
+      enable_i => '1',
+      count_o  => timestamp);
 
   ------------------------------------------------------------------------------
   -- Registers
   ------------------------------------------------------------------------------
 
-  -- Count the number of clk_i cycles from strobe pulse to strobe pulse.
   regs : process (clk_i, rst_n_i) is
     procedure reset is
     begin
-      count  <= to_unsigned(0, count'length);
+      addr  <= to_unsigned(0, count'length);
       strobe <= '0';
     end procedure reset;
   begin  -- process strobe
     if rst_n_i = '0' then
       reset;
     elsif rising_edge(clk_i) then
-      if enable_i = '0' then
-        reset;
-      else
-        if count = clks_per_strobe_c-1 then
-          count  <= (others => '0');
-          strobe <= '1';
-        else
-          count  <= count + 1;
-          strobe <= '0';
-        end if;
+      -- Defaults
+      ir_rx <= next_ir_rx;
+      store_timestamp <= '0';
+
+      if rising = '1' or falling = '1' then
+        addr <= addr + 1;
+        store_timestamp <= '1';
       end if;
     end if;
   end process regs;
+
+  ram : process (clk_i) is
+  begin
+    if rising_edge(clk_i) then
+      if store_timestamp = '1' then
+        ram(to_integer(addr)) <= timestamp;
+        end if;
+
+      if avs_s0_read = '1' then
+        ram_readdata <= ram(to_integer(to_unsigned(avs_s0_address, addr'length)));
+      end if;
+    end if;
+  end process ram;
 
 end architecture rtl;
