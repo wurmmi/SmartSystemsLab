@@ -21,7 +21,7 @@ PORT(
 
     -- //////////// Infrared Interface //////////
     IRDA_RXD            : in    std_logic;
-    IRDA_TXD            : in    std_logic;
+    IRDA_TXD            : out   std_logic;
 
     ---------HPS Connections---------------
     HPS_CONV_USB_N      : inout std_logic;

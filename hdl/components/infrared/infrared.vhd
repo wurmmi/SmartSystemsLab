@@ -99,7 +99,8 @@ begin  -- architecture rtl
   -- Outputs
   ------------------------------------------------------------------------------
 
-  ir_rx_o <= ir_rx(ir_rx'high);
+  ir_rx_o <= ir_rx(ir_rx'high); -- mirror rx signal (for debug only)
+  ir_tx_o <= ir_rx(ir_rx'high); -- mirror rx signal (until tx is implemented)
   avs_s0_readdata <= std_logic_vector(ram_readdata);
   done_recording_irq_o <= recording_stopped;
 
@@ -143,7 +144,7 @@ begin  -- architecture rtl
         rst_n_i => rst_n_i,
         enable_i => falling,
         overflow_o => recording_stopped,
-        count_o  => timestamp);
+        count_o  => open);
 
   ------------------------------------------------------------------------------
   -- Registers
