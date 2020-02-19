@@ -27,7 +27,7 @@ entity infrared is
     --! @}
     --! @name Avalon MM Bus
     --! @{
-    avs_s0_address     : in  std_logic_vector(7 downto 0);
+    avs_s0_address     : in  std_logic_vector(10 downto 0);
     avs_s0_read        : in  std_logic;
     avs_s0_readdata    : out std_logic_vector(31 downto 0);
     avs_s0_write       : in  std_logic;
@@ -71,13 +71,16 @@ architecture rtl of infrared is
 
   subtype timestamp_t is unsigned(31 downto 0);
   type ram_t is array(0 to 255) of timestamp_t;
+
   signal ram_data : ram_t := (others => (others => '0'));
   signal ram_readdata : timestamp_t := (others => '0');
   signal ctrl_readdata : timestamp_t := (others => '0');
 
   signal addr            : unsigned(7 downto 0) := (others => '0');
-  signal ir_rx           : std_ulogic_vector(1 downto 0);
-  signal store_timestamp : std_ulogic;
+  signal ir_rx           : std_ulogic_vector(1 downto 0) := (others => '0');
+  signal store_timestamp : std_ulogic := '0';
+  signal irq_active : std_ulogic  := '0';
+  signal irq_reset  : std_ulogic  := '0';
 
   --! @}
   -----------------------------------------------------------------------------
@@ -92,7 +95,6 @@ architecture rtl of infrared is
   signal recording_stopped : std_ulogic;
   signal timestamp : timestamp_t;
   signal ctrl_access : std_ulogic;
-  signal irq_active : std_ulogic;
 
   --! @}
 
@@ -105,7 +107,7 @@ begin  -- architecture rtl
   ir_rx_o <= ir_rx(ir_rx'high); -- mirror rx signal (for debug only)
   ir_tx_o <= ir_rx(ir_rx'high); -- mirror rx signal (until tx is implemented)
   avs_s0_readdata <= std_logic_vector(ram_readdata) when ctrl_access = '0'
-                     else ctrl_readdata;
+                     else std_logic_vector(ctrl_readdata);
   done_recording_irq_o <= recording_stopped;
 
   -----------------------------------------------------------------------------
@@ -115,7 +117,7 @@ begin  -- architecture rtl
   next_ir_rx <= ir_rx(ir_rx'high-1 downto ir_rx'low) & ir_rx_sync;
   rising     <= '1' when ir_rx(1)='0' and ir_rx(0)='1' else '0';
   falling    <= '1' when ir_rx(1)='1' and ir_rx(0)='0' else '0';
-  ctrl_access <= '1' when avs_s0_address > ram_t'length-1 else '0';
+  ctrl_access <= '1' when to_integer(unsigned(avs_s0_address)) > ram_t'length-1 else '0';
 
   -----------------------------------------------------------------------------
   -- Instantiations
@@ -177,6 +179,9 @@ begin  -- architecture rtl
         irq_active <= '1';
         addr <= (others => '0');
       end if;
+      if irq_reset = '1' then
+        irq_active <= '0';
+      end if;
     end if;
   end process regs;
 
@@ -196,19 +201,31 @@ begin  -- architecture rtl
   ctrl_interface : process (clk_i) is
     procedure reset is
     begin
+      ctrl_readdata <= (others => '0');
+      irq_reset <= '0';
     end procedure reset;
   begin -- process ctrl_interface
       if rst_n_i = '0' then
         reset;
       elsif rising_edge(clk_i) then
         if avs_s0_read = '1' then
+          -- Defaults
+          ctrl_readdata <= (others => '0');
+          irq_reset <= '0';
+
           -- addresses higher 255
           case (to_integer(unsigned(avs_s0_address(avs_s0_address'high downto addr'high+1)))) is
             when 0 => -- magic number
               ctrl_readdata <= x"ABCD1234";
-            when 1 => -- read and clear irq status
-              ctrl_readdata <= irq_active;
-              irq_active <= '0';
+            when 1 => -- magic number
+              ctrl_readdata <= x"11111111";
+            when 2 => -- magic number
+              ctrl_readdata <= x"22222222";
+            when 3 => -- magic number
+              ctrl_readdata <= x"33333333";
+            when 4 => -- read and clear irq status
+              ctrl_readdata(0) <= irq_active;
+              irq_reset <= '1';
             when others =>
               ctrl_readdata <= x"DEADBEEF";
           end case;
