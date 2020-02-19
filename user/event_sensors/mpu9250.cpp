@@ -41,7 +41,7 @@ using namespace std::placeholders;
 
 
 /* Event specific defines */
-#define EVENT_SIGNAL_NR 10
+#define EVENT_SIGNAL_NR 10    // (SIGUSR1)
 #define EVENT_PACKETS   1024
 
 
