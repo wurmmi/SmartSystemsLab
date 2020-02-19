@@ -73,6 +73,7 @@ architecture rtl of infrared is
   type ram_t is array(0 to 255) of timestamp_t;
   signal ram_data : ram_t := (others => (others => '0'));
   signal ram_readdata : timestamp_t := (others => '0');
+  signal ctrl_readdata : timestamp_t := (others => '0');
 
   signal addr            : unsigned(7 downto 0) := (others => '0');
   signal ir_rx           : std_ulogic_vector(1 downto 0);
@@ -90,6 +91,8 @@ architecture rtl of infrared is
   signal falling    : std_ulogic;
   signal recording_stopped : std_ulogic;
   signal timestamp : timestamp_t;
+  signal ctrl_access : std_ulogic;
+  signal irq_active : std_ulogic;
 
   --! @}
 
@@ -101,7 +104,8 @@ begin  -- architecture rtl
 
   ir_rx_o <= ir_rx(ir_rx'high); -- mirror rx signal (for debug only)
   ir_tx_o <= ir_rx(ir_rx'high); -- mirror rx signal (until tx is implemented)
-  avs_s0_readdata <= std_logic_vector(ram_readdata);
+  avs_s0_readdata <= std_logic_vector(ram_readdata) when ctrl_access = '0'
+                     else ctrl_readdata;
   done_recording_irq_o <= recording_stopped;
 
   -----------------------------------------------------------------------------
@@ -111,6 +115,7 @@ begin  -- architecture rtl
   next_ir_rx <= ir_rx(ir_rx'high-1 downto ir_rx'low) & ir_rx_sync;
   rising     <= '1' when ir_rx(1)='0' and ir_rx(0)='1' else '0';
   falling    <= '1' when ir_rx(1)='1' and ir_rx(0)='0' else '0';
+  ctrl_access <= '1' when avs_s0_address > ram_t'length-1 else '0';
 
   -----------------------------------------------------------------------------
   -- Instantiations
@@ -155,6 +160,7 @@ begin  -- architecture rtl
     begin
       addr  <= to_unsigned(0, addr'length);
       store_timestamp <= '0';
+      irq_active <= '0';
     end procedure reset;
   begin  -- process strobe
     if rst_n_i = '0' then
@@ -168,6 +174,7 @@ begin  -- architecture rtl
         addr <= addr + 1;
         store_timestamp <= '1';
       elsif recording_stopped = '1' then
+        irq_active <= '1';
         addr <= (others => '0');
       end if;
     end if;
@@ -181,9 +188,32 @@ begin  -- architecture rtl
         end if;
 
       if avs_s0_read = '1' then
-        ram_readdata <= ram_data(to_integer(unsigned(avs_s0_address)));
+        ram_readdata <= ram_data(to_integer(unsigned(avs_s0_address(addr'range))));
       end if;
     end if;
   end process ram;
+
+  ctrl_interface : process (clk_i) is
+    procedure reset is
+    begin
+    end procedure reset;
+  begin -- process ctrl_interface
+      if rst_n_i = '0' then
+        reset;
+      elsif rising_edge(clk_i) then
+        if avs_s0_read = '1' then
+          -- addresses higher 255
+          case (to_integer(unsigned(avs_s0_address(avs_s0_address'high downto addr'high+1)))) is
+            when 0 => -- magic number
+              ctrl_readdata <= x"ABCD1234";
+            when 1 => -- read and clear irq status
+              ctrl_readdata <= irq_active;
+              irq_active <= '0';
+            when others =>
+              ctrl_readdata <= x"DEADBEEF";
+          end case;
+        end if;
+      end if;
+  end process ctrl_interface;
 
 end architecture rtl;
