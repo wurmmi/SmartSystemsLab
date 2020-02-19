@@ -128,7 +128,7 @@ begin  -- architecture rtl
 
   timestamp_counter_inst : entity work.counter
     generic map (
-      counter_width_g => 31)
+      counter_width_g => 32)
       port map (
         clk_i   => clk_i,
         rst_n_i => rst_n_i,
