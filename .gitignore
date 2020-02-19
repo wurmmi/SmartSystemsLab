@@ -23,6 +23,7 @@ transcript
 
 # Quartus temporary files
 .qsys_edit/
+subsystemHMI/
 db/
 HPSPlatform/
 incremental_db/
