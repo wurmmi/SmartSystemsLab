@@ -92,6 +92,11 @@
    type="clock"
    dir="end" />
  <interface
+   name="infrared_done_recording_irq"
+   internal="infrared.done_recording_irq"
+   type="interrupt"
+   dir="end" />
+ <interface
    name="infrared_ir_rx_i"
    internal="infrared.ir_rx_i"
    type="conduit"
@@ -106,11 +111,7 @@
    internal="infrared.ir_tx_o"
    type="conduit"
    dir="end" />
- <interface
-   name="infrared_irq_o"
-   internal="infrared.interrupt_sender"
-   type="interrupt"
-   dir="end" />
+ <interface name="infrared_irq_o" internal="infrared.interrupt_sender" />
  <interface
    name="infrared_rst_n_i"
    internal="infrared.rst_n_i"

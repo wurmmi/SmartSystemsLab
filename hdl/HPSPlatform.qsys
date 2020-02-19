@@ -312,11 +312,7 @@
    internal="hmi.infrared_ir_tx_o"
    type="conduit"
    dir="end" />
- <interface
-   name="hmi_infrared_irq_o"
-   internal="hmi.infrared_irq_o"
-   type="interrupt"
-   dir="end" />
+ <interface name="hmi_infrared_irq_o" internal="hmi.infrared_irq_o" />
  <interface
    name="hmi_subsystemapds9301_apdsinterrupt"
    internal="hmi.subsystemapds9301_apdsinterrupt"
@@ -439,7 +435,7 @@
   <parameter name="AUTO_SWITCHES_CLK_CLOCK_DOMAIN" value="1" />
   <parameter name="AUTO_SWITCHES_CLK_CLOCK_RATE" value="50000000" />
   <parameter name="AUTO_SWITCHES_CLK_RESET_DOMAIN" value="1" />
-  <parameter name="AUTO_UNIQUE_ID" value="HPSPlatform_hmi" />
+  <parameter name="AUTO_UNIQUE_ID" value="$${FILENAME}_hmi" />
  </module>
  <module name="hps_0" kind="altera_hps" version="19.1" enabled="1">
   <parameter name="ABSTRACT_REAL_COMPARE_TEST" value="false" />
@@ -1076,6 +1072,13 @@
    start="clk_0.clk"
    end="hmi.subsystemmpu9250_clk" />
  <connection kind="clock" version="19.1" start="clk_0.clk" end="hmi.switches_clk" />
+ <connection
+   kind="interrupt"
+   version="19.1"
+   start="hps_0.f2h_irq0"
+   end="hmi.infrared_done_recording_irq">
+  <parameter name="irqNumber" value="1" />
+ </connection>
  <connection
    kind="interrupt"
    version="19.1"
