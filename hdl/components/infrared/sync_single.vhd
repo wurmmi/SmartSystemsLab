@@ -21,9 +21,9 @@ entity sync_single is
     --! @{
 
     --! System clock
-    clk_i   : in std_logic;
+    clk_i   : in std_ulogic;
     --! Asynchronous reset
-    rst_n_i : in std_logic;
+    rst_n_i : in std_ulogic;
 
     --! @}
     --! @name Sync signals

@@ -22,9 +22,9 @@ entity counter is
     --! @{
 
     --! System clock
-    clk_i   : in std_logic;
+    clk_i   : in std_ulogic;
     --! Asynchronous reset
-    rst_n_i : in std_logic;
+    rst_n_i : in std_ulogic;
 
     --! @}
     --! @name Control and status signals

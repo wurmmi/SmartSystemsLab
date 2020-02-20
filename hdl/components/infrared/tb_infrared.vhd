@@ -11,6 +11,7 @@ entity tb_infrared is
 end entity tb_infrared;
 
 architecture bhv of tb_infrared is
+
   signal avs_s0_address   : std_logic_vector(10 downto 0) := (others => '0'); -- avs_s0.address
   signal avs_s0_read      : std_logic                     := '0';             --       .read
   signal avs_s0_readdata  : std_logic_vector(31 downto 0);                    --       .readdata
@@ -26,7 +27,7 @@ architecture bhv of tb_infrared is
   constant clk_cycle_duration_c  : time := 1 sec / 50E6; -- 50 MHz
   constant reset_duration_c : time := 20 * clk_cycle_duration_c;
 
-begin
+begin -- architecture bhv
 
   nRst <= '1' after reset_duration_c;
   clk  <= not clk after clk_cycle_duration_c / 2;
