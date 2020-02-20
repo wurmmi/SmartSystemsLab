@@ -9,7 +9,7 @@ add wave -noupdate /tb_infrared/clk
 add wave -noupdate /tb_infrared/nRst
 add wave -noupdate /tb_infrared/ir_rx
 add wave -noupdate /tb_infrared/ir_tx
-add wave -noupdate /tb_infrared/irq
+add wave -noupdate -color Magenta /tb_infrared/irq
 add wave -noupdate /tb_infrared/ir_rx_mirror
 add wave -noupdate -divider stop_counter
 add wave -noupdate /tb_infrared/DUT/stop_counter_inst/clk_i
@@ -55,8 +55,8 @@ add wave -noupdate /tb_infrared/DUT/timestamp_counter_inst/count_o
 add wave -noupdate /tb_infrared/DUT/timestamp_counter_inst/count
 add wave -noupdate /tb_infrared/DUT/timestamp_counter_inst/overflow
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {1530000 ps} 0} {{Cursor 2} {241876 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {21970000 ps} 0} {{Cursor 2} {241876 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 415
 configure wave -valuecolwidth 164
 configure wave -justifyvalue left

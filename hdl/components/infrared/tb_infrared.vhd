@@ -53,15 +53,22 @@ begin -- architecture bhv
     -- Generate infrared input signal
     ir_rx_input : for i in 0 to 10 loop
       ir_rx <= not ir_rx;
-      wait for 100 ns;
+      wait for 10 * clk_cycle_duration_c;
     end loop;
 
     -- Wait for interrupt generation (end of recieved IR sequence)
     wait until irq = '1';
     report "(MWURM) IRQ occured (end of received IR sequence)." severity note;
+    wait for 10 * clk_cycle_duration_c;
 
+    -- Read data (magic numbers only)
+    read_magic_numbers : for i in 256 to 266 loop
+        avs_s0_address  <= std_logic_vector(to_unsigned(i, avs_s0_address'length));
+        avs_s0_read     <= '1';
 
-
+        wait until clk  <= '1';
+        wait until clk  <= '0';
+    end loop read_magic_numbers;
 
     wait;
   end process test_proc;

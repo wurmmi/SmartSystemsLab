@@ -109,7 +109,7 @@ begin  -- architecture rtl
   ir_tx_o <= ir_rx(ir_rx'high); -- mirror rx signal (until tx is implemented)
   avs_s0_readdata <= std_logic_vector(ram_readdata) when ctrl_access = '0'
                      else std_logic_vector(ctrl_readdata);
-  done_recording_irq_o <= recording_stopped;
+  done_recording_irq_o <= irq_active;
 
   -----------------------------------------------------------------------------
   -- Signal Assignments
