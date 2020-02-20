@@ -48,10 +48,20 @@ begin
   test_proc : process
   begin
     wait for reset_duration_c + 5 ns;
+
+    -- Generate infrared input signal
     ir_rx_input : for i in 0 to 10 loop
       ir_rx <= not ir_rx;
       wait for 100 ns;
     end loop;
+
+    -- Wait for interrupt generation (end of recieved IR sequence)
+    wait until irq = '1';
+    report "(MWURM) IRQ occured (end of received IR sequence)." severity note;
+
+
+
+
     wait;
   end process test_proc;
 

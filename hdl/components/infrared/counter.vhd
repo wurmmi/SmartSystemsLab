@@ -16,7 +16,7 @@ use ieee.numeric_std.all;
 
 entity counter is
   generic (
-    counter_width_g : natural := 31);
+    counter_width_g : natural := 32);
   port (
     --! @name Clocks and resets
     --! @{
@@ -43,6 +43,16 @@ end entity counter;
 
 --! RTL implementation of counter
 architecture rtl of counter is
+
+  -----------------------------------------------------------------------------
+  --! @name Types and Constants
+  -----------------------------------------------------------------------------
+  --! @{
+
+  constant max_count_c : unsigned(count_o'range) := (others => '1');
+
+  --! @}
+
   -----------------------------------------------------------------------------
   --! @name Internal Registers
   -----------------------------------------------------------------------------
@@ -94,7 +104,7 @@ begin  -- architecture rtl
         reset;
       else
         count <= count + 1;
-        if count = 2**count'length-1 then
+        if count = max_count_c then
           overflow <= '1';
         end if;
       end if;
