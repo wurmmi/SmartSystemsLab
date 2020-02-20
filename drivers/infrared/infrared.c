@@ -33,8 +33,7 @@
 #define NUM_BYTE_IRQS_ACTIVE (sizeof(uint32_t))
 
 #define SIZEOF_DATA_T (NUM_BYTE_TIMESTAMP_DATA + \
-                       NUM_BYTE_MAGIC_NRS +      \
-                       NUM_BYTE_IRQS_ACTIVE)
+                       NUM_BYTE_MAGIC_NRS)
 
 #define MEM_OFFSET_DATA_MAGIC_NR0 (256 + 0x0)
 #define MEM_OFFSET_DATA_MAGIC_NR1 (256 + 0x4)
@@ -77,7 +76,7 @@ static irqreturn_t irq_handler(int nr, void *data_ptr)
   struct siginfo info;
   struct task_struct *t;
 
-  pr_info("Interrupt occured\n");
+  pr_info("INFRARED Interrupt occured\n");
 
   /* Determine which interrupt occured */
   dev->irqs_active = ioread32(dev->regs + MEM_OFFSET_DATA_IRQ);
@@ -85,7 +84,7 @@ static irqreturn_t irq_handler(int nr, void *data_ptr)
   if (dev->irqs_active == 0x1)
   {
     dev->irq_count++;
-    pr_info("Received buffer 0 interrupt [Occured %i times so far.]\n", dev->irq_count);
+    pr_info("INFRARED Received interrupt [Occured %i times so far.]\n", dev->irq_count);
   }
   else
   {

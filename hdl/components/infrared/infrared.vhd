@@ -76,7 +76,7 @@ architecture rtl of infrared is
   signal ram_readdata : timestamp_t := (others => '0');
   signal ctrl_readdata : timestamp_t := (others => '0');
 
-  signal addr            : unsigned(7 downto 0) := (others => '0');
+  signal store_addr            : unsigned(7 downto 0) := (others => '0');
   signal ir_rx           : std_ulogic_vector(1 downto 0) := (others => '0');
   signal store_timestamp : std_ulogic := '0';
   signal irq_active : std_ulogic  := '0';
@@ -95,6 +95,7 @@ architecture rtl of infrared is
   signal recording_stopped : std_ulogic;
   signal timestamp : timestamp_t;
   signal ctrl_access : std_ulogic;
+  signal end_of_sequence : std_ulogic;
 
   --! @}
 
@@ -118,6 +119,7 @@ begin  -- architecture rtl
   rising     <= '1' when ir_rx(1)='0' and ir_rx(0)='1' else '0';
   falling    <= '1' when ir_rx(1)='1' and ir_rx(0)='0' else '0';
   ctrl_access <= '1' when to_integer(unsigned(avs_s0_address)) > ram_t'length-1 else '0';
+  end_of_sequence <= '1' when to_integer(store_addr) > 0 and ir_rx(1) = '1' else '0';
 
   -----------------------------------------------------------------------------
   -- Instantiations
@@ -145,11 +147,11 @@ begin  -- architecture rtl
 
   stop_counter_inst : entity work.counter
     generic map (
-      counter_width_g => 25) -- 2^25 steps @ 100MHz => 0.3355 sec
+      counter_width_g => 10) -- 2^25 steps @ 50MHz => 0.6711 sec
       port map (
         clk_i   => clk_i,
         rst_n_i => rst_n_i,
-        enable_i => falling,
+        enable_i => end_of_sequence,
         overflow_o => recording_stopped,
         count_o  => open);
 
@@ -160,7 +162,7 @@ begin  -- architecture rtl
   regs : process (clk_i, rst_n_i) is
     procedure reset is
     begin
-      addr  <= to_unsigned(0, addr'length);
+      store_addr  <= to_unsigned(0, store_addr'length);
       store_timestamp <= '0';
       irq_active <= '0';
     end procedure reset;
@@ -173,11 +175,11 @@ begin  -- architecture rtl
       store_timestamp <= '0';
 
       if rising = '1' or falling = '1' then
-        addr <= addr + 1;
+        store_addr <= store_addr + 1;
         store_timestamp <= '1';
       elsif recording_stopped = '1' then
         irq_active <= '1';
-        addr <= (others => '0');
+        store_addr <= (others => '0');
       end if;
       if irq_reset = '1' then
         irq_active <= '0';
@@ -189,11 +191,11 @@ begin  -- architecture rtl
   begin
     if rising_edge(clk_i) then
       if store_timestamp = '1' then
-        ram_data(to_integer(addr)) <= timestamp;
+        ram_data(to_integer(store_addr)) <= timestamp;
         end if;
 
       if avs_s0_read = '1' then
-        ram_readdata <= ram_data(to_integer(unsigned(avs_s0_address(addr'range))));
+        ram_readdata <= ram_data(to_integer(unsigned(avs_s0_address(store_addr'range))));
       end if;
     end if;
   end process ram;
@@ -214,7 +216,7 @@ begin  -- architecture rtl
           irq_reset <= '0';
 
           -- addresses higher 255
-          case (to_integer(unsigned(avs_s0_address(avs_s0_address'high downto addr'high+1)))) is
+          case (to_integer(unsigned(avs_s0_address(avs_s0_address'high downto store_addr'high+1)))) is
             when 0 => -- magic number
               ctrl_readdata <= x"ABCD1234";
             when 1 => -- magic number
