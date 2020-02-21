@@ -217,17 +217,17 @@ begin  -- architecture rtl
           ctrl_readdata <= (others => '0');
           irq_reset <= '0';
 
-          -- addresses higher 255
-          case (to_integer(ctrl_addr)) is
-            when 1 => -- magic number
+          -- addresses lower 255 are reserved for RAM
+          case (to_integer(unsigned(avs_s0_address))) is
+            when 256 => -- magic number
               ctrl_readdata <= x"ABCD1234";
-            when 2 => -- magic number
+            when 257 => -- magic number
               ctrl_readdata <= x"10101010";
-            when 3 => -- magic number
+            when 258 => -- magic number
               ctrl_readdata <= x"22222222";
-            when 4 => -- magic number
+            when 259 => -- magic number
               ctrl_readdata <= x"33333333";
-            when 5 => -- read and clear irq status
+            when 260 => -- read and clear irq status
               ctrl_readdata(0) <= irq_active;
               irq_reset <= '1';
             when others =>

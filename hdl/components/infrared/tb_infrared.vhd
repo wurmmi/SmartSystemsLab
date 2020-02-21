@@ -61,8 +61,8 @@ begin -- architecture bhv
     report "(MWURM) IRQ occured (end of received IR sequence)." severity note;
     wait for 10 * clk_cycle_duration_c;
 
-    -- Read data (magic numbers only)
-    read_magic_numbers : for i in 256 to 266 loop
+    -- Read data (RAM)
+    read_ram_data : for i in 0 to 255 loop
         avs_s0_address  <= std_logic_vector(to_unsigned(i, avs_s0_address'length));
         avs_s0_read     <= '1';
 
@@ -70,7 +70,20 @@ begin -- architecture bhv
         wait until clk  <= '0';
         wait until clk  <= '1';
         wait until clk  <= '0';
-    end loop read_magic_numbers;
+    end loop read_ram_data;
+
+    wait for 20 * clk_cycle_duration_c;
+
+    -- Read data (control and status registers)
+    read_ctrl_status_data : for i in 256 to 266 loop
+        avs_s0_address  <= std_logic_vector(to_unsigned(i, avs_s0_address'length));
+        avs_s0_read     <= '1';
+
+        wait until clk  <= '1';
+        wait until clk  <= '0';
+        wait until clk  <= '1';
+        wait until clk  <= '0';
+    end loop read_ctrl_status_data;
 
     wait;
   end process test_proc;
