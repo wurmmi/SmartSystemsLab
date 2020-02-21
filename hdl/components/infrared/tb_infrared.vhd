@@ -68,6 +68,8 @@ begin -- architecture bhv
 
         wait until clk  <= '1';
         wait until clk  <= '0';
+        wait until clk  <= '1';
+        wait until clk  <= '0';
     end loop read_magic_numbers;
 
     wait;
