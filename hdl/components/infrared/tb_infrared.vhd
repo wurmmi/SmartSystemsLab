@@ -50,11 +50,18 @@ begin -- architecture bhv
   begin
     wait for reset_duration_c + 5 ns;
 
+    -- Default sensor value (idle)
+    ir_rx <= '1';
+    wait for 200 * clk_cycle_duration_c;
+
     -- Generate infrared input signal
     ir_rx_input : for i in 0 to 10 loop
       ir_rx <= not ir_rx;
       wait for 10 * clk_cycle_duration_c;
     end loop;
+
+    -- Default sensor value (idle)
+    ir_rx <= '1';
 
     -- Wait for interrupt generation (end of recieved IR sequence)
     wait until irq = '1';

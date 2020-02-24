@@ -4,7 +4,8 @@ do comp.do
 echo "Sim: load design"
 set unit tb_infrared
 vsim -novopt -wlfdeleteonquit \
-      work.${unit}(Bhv)
+      work.${unit}(Bhv) \
+      +nowarn3116
 
 set tb    ${unit}
 set dut   ${tb}/DUT

@@ -120,7 +120,7 @@ begin  -- architecture rtl
   rising     <= '1' when ir_rx(1)='0' and ir_rx(0)='1' else '0';
   falling    <= '1' when ir_rx(1)='1' and ir_rx(0)='0' else '0';
   ctrl_access <= '1' when to_integer(unsigned(avs_s0_address)) > ram_t'length-1 else '0';
-  end_of_sequence <= '1' when to_integer(ram_addr) > 0 and ir_rx(1) = '1' else '0';
+  end_of_sequence <= '1' when to_integer(ram_addr) > 5 and ir_rx(1) = '1' else '0';
   ctrl_addr <= unsigned(avs_s0_address(ctrl_addr'range));
 
   -----------------------------------------------------------------------------
