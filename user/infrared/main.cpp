@@ -32,6 +32,13 @@ struct INFRARED
 static void interrupt_handler(int, siginfo_t *, void *)
 {
   std::cout << "INFRARED An interrupt occured! :)" << std::endl;
+
+  // TODO
+  // 1. Read timestamps
+  // 2. Write them into FPGA send-buffer
+  // 3. Set "send bit" in control register
+  //     -- sets LED high
+  //     -- sequence is sent by press of a button (mirror button on another LED))
 }
 
 void setup_interrupt_signalling()
