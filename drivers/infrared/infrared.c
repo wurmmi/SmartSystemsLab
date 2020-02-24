@@ -76,10 +76,11 @@ static irqreturn_t irq_handler(int nr, void *data_ptr)
   struct siginfo info;
   struct task_struct *t;
 
-  pr_info("INFRARED Interrupt occured\n");
+  pr_info("INFRARED Interrupt occured.\n");
 
   /* Determine which interrupt occured */
-  dev->irqs_active = ioread32(dev->regs + MEM_OFFSET_DATA_IRQ);
+  // dev->irqs_active = ioread32(dev->regs + MEM_OFFSET_DATA_IRQ);
+  dev->irqs_active = 1;
 
   if (dev->irqs_active == 0x1)
   {
@@ -89,6 +90,7 @@ static irqreturn_t irq_handler(int nr, void *data_ptr)
   else
   {
     /* Another device asserted the shared interrupt line */
+    pr_info("INFRARED Shared interrupt wasn't me.");
     return IRQ_NONE;
   }
 
@@ -97,21 +99,21 @@ static irqreturn_t irq_handler(int nr, void *data_ptr)
   /* -------- TEMPORARY ----------------------------------------- */
 
   /* Send signal to user space */
-  t = pid_task(find_vpid(dev->pid), PIDTYPE_PID);
-  if (t == NULL)
-  {
-    printk(KERN_ERR "A Task with PID %i does not exist.\n", dev->pid);
-    return IRQ_HANDLED;
-  }
+  // t = pid_task(find_vpid(dev->pid), PIDTYPE_PID);
+  // if (t == NULL)
+  // {
+  //   printk(KERN_ERR "A Task with PID %i does not exist.\n", dev->pid);
+  //   return IRQ_HANDLED;
+  // }
 
-  memset(&info, 0, sizeof(struct siginfo));
-  info.si_signo = SIGNAL_EVENT;
-  info.si_code = SI_QUEUE;
-  info.si_int = 4711;
+  // memset(&info, 0, sizeof(struct siginfo));
+  // info.si_signo = SIGNAL_EVENT;
+  // info.si_code = SI_QUEUE;
+  // info.si_int = 4711;
 
-  send_sig_info(SIGNAL_EVENT, &info, t);
+  // send_sig_info(SIGNAL_EVENT, &info, t);
 
-  return IRQ_HANDLED;
+  // return IRQ_HANDLED;
 }
 
 /*
