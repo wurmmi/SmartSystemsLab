@@ -25,30 +25,24 @@ std::optional<INFRARED> readFromCDev()
 
   // lock fpga device using a lock guard
   // the result is never used, but it keeps the mutex locked until it goes out of scope
-  std::cerr << "INFRARED 01." << std::endl;
   auto _lck = lockFPGA();
 
-  std::cerr << "INFRARED 1." << std::endl;
   // open character device
   auto fd = fopen(CHARACTER_DEVICE.c_str(), "rb");
-  std::cerr << "INFRARED 2." << std::endl;
   if (!fd)
   {
     std::cerr << "Failed to open character device '" << CHARACTER_DEVICE << "'" << std::endl;
     return {};
   }
 
-  std::cerr << "INFRARED 3." << std::endl;
   if (fread(&results, sizeof(INFRARED), 1, fd) != 1)
   {
     std::cerr << "Failed to read sensor values" << std::endl;
     (void)fclose(fd);
     return {};
   }
-  std::cerr << "INFRARED 4." << std::endl;
 
   (void)fclose(fd);
-  std::cerr << "INFRARED 5." << std::endl;
 
   return std::make_optional(results);
 }
@@ -79,19 +73,15 @@ int main()
   {
     std::this_thread::sleep_for(1000ms);
 
-    std::cerr << "INFRARED 0." << std::endl;
     auto optValues = readFromCDev();
     if (!optValues.has_value())
     {
       std::cerr << "INFRARED Failed to read device." << std::endl;
       continue;
     }
-    std::cerr << "INFRARED 6." << std::endl;
 
     auto values = optValues.value();
-    std::cerr << "INFRARED 7." << std::endl;
     std::cout << formatDataToString(values) << std::endl;
-    std::cerr << "INFRARED 8." << std::endl;
   }
 
   return 0;
