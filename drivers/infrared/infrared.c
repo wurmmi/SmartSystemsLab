@@ -35,11 +35,11 @@
 #define SIZEOF_DATA_T (NUM_BYTE_TIMESTAMP_DATA + \
                        NUM_BYTE_MAGIC_NRS)
 
-#define MEM_OFFSET_DATA_MAGIC_NR0 (256 + 0x0)
-#define MEM_OFFSET_DATA_MAGIC_NR1 (256 + 0x4)
-#define MEM_OFFSET_DATA_MAGIC_NR2 (256 + 0x8)
-#define MEM_OFFSET_DATA_MAGIC_NR3 (256 + 0xC)
-#define MEM_OFFSET_DATA_IRQ (256 + 0x10)
+#define MEM_OFFSET_DATA_MAGIC_NR0 (1024 + 0x0)
+#define MEM_OFFSET_DATA_MAGIC_NR1 (1024 + 0x4)
+#define MEM_OFFSET_DATA_MAGIC_NR2 (1024 + 0x8)
+#define MEM_OFFSET_DATA_MAGIC_NR3 (1024 + 0xC)
+#define MEM_OFFSET_DATA_IRQ (1024 + 0x10)
 
 /* IO Control (IOCTL) */
 #define IOC_MODE_POLLING 0
@@ -73,8 +73,8 @@ struct data
 static irqreturn_t irq_handler(int nr, void *data_ptr)
 {
   struct data *dev = data_ptr;
-  struct siginfo info;
-  struct task_struct *t;
+  // struct siginfo info;
+  // struct task_struct *t;
 
   pr_info("INFRARED Interrupt occured.\n");
 
@@ -139,10 +139,17 @@ static int dev_read(struct file *filep, char *buf, size_t count,
   if ((*offp + count) > SIZEOF_DATA_T)
     count = SIZEOF_DATA_T - *offp;
 
-  dev->buffer_data.magic_number[0] = ioread32(dev->regs + MEM_OFFSET_DATA_MAGIC_NR0);
-  dev->buffer_data.magic_number[1] = ioread32(dev->regs + MEM_OFFSET_DATA_MAGIC_NR1);
-  dev->buffer_data.magic_number[2] = ioread32(dev->regs + MEM_OFFSET_DATA_MAGIC_NR2);
-  dev->buffer_data.magic_number[3] = ioread32(dev->regs + MEM_OFFSET_DATA_MAGIC_NR3);
+  pr_info("INFRARED Reading. offp=%lli, count=%i", *offp, count);
+
+  //  dev->buffer_data.magic_number[0] = ioread32(dev->regs + MEM_OFFSET_DATA_MAGIC_NR0);
+  //  dev->buffer_data.magic_number[1] = ioread32(dev->regs + MEM_OFFSET_DATA_MAGIC_NR1);
+  //  dev->buffer_data.magic_number[2] = ioread32(dev->regs + MEM_OFFSET_DATA_MAGIC_NR2);
+  //  dev->buffer_data.magic_number[3] = ioread32(dev->regs + MEM_OFFSET_DATA_MAGIC_NR3);
+
+  dev->buffer_data.magic_number[0] = 0x1111;
+  dev->buffer_data.magic_number[1] = 0x2222;
+  dev->buffer_data.magic_number[2] = 0x3333;
+  dev->buffer_data.magic_number[3] = 0x4444;
 
   pr_info("magic nr 0: 0x%x", dev->buffer_data.magic_number[0]);
   pr_info("magic nr 1: 0x%x", dev->buffer_data.magic_number[1]);
@@ -158,51 +165,9 @@ static int dev_read(struct file *filep, char *buf, size_t count,
   return count;
 }
 
-/*
- * @brief This function gets executed on ioctl.
- */
-static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
-{
-  struct data *dev = container_of(filep->private_data, struct data, misc);
-  uint32_t threshold;
-  uint32_t tmp;
-
-  switch (cmd)
-  {
-  case IOC_CMD_SET_READ_POLLING:
-    pr_info("dev_ioctl: Set cmd to 'read polling'.\n");
-    dev->mode = IOC_MODE_POLLING;
-    break;
-  case IOC_CMD_SET_READ_BUFFER:
-    pr_info("dev_ioctl: Set cmd to 'read buffer'.\n");
-    dev->mode = IOC_MODE_BUFFER;
-    break;
-  case IOC_CMD_SET_PID:
-    /* Get the PID of the currently executing process.
-     * The `current` variable is defined in linux/sched/signal.h */
-    dev->pid = task_pid_nr(current);
-    pr_info("dev_ioctl: Set current PID to %i.\n", dev->pid);
-    /* Enable buffer 0 again (it's disabled internally on every interrupt to keep the data valid) */
-    // iowrite32(0x1, dev->regs + MEM_OFFSET_BUF_CTRL_STATUS);
-
-    break;
-  case IOC_CMD_SET_THRESHOLD:
-    tmp = copy_from_user(&threshold, (uint32_t *)arg, sizeof(threshold));
-    pr_info("dev_ioctl: Set acceleration threshold for shock detection to %i.\n", threshold);
-    // iowrite32(threshold, dev->regs + MEM_OFFSET_SHOCK_THRESHOLD);
-    break;
-  default:
-    /* it seems like ioctl is also called for all invocations of fread with cmd 0x5041 (TCGETS) */
-    // pr_info("dev_ioctl: Unknown cmd (%u). Exit.\n", cmd);
-    break;
-  }
-  return 0;
-}
-
 static const struct file_operations dev_fops = {
     .owner = THIS_MODULE,
-    .read = dev_read,
-    .unlocked_ioctl = dev_ioctl};
+    .read = dev_read};
 
 static int dev_probe(struct platform_device *pdev)
 {

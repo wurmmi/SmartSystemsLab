@@ -25,6 +25,7 @@ std::optional<INFRARED> readFromCDev()
 
   // lock fpga device using a lock guard
   // the result is never used, but it keeps the mutex locked until it goes out of scope
+  std::cerr << "INFRARED 01." << std::endl;
   auto _lck = lockFPGA();
 
   std::cerr << "INFRARED 1." << std::endl;
@@ -55,10 +56,10 @@ std::optional<INFRARED> readFromCDev()
 std::string formatDataToString(INFRARED payload)
 {
   std::stringstream ss;
-  ss << "magic_number[0]:" << payload.magic_number[0] << std::endl;
-  ss << "magic_number[1]:" << payload.magic_number[1] << std::endl;
-  ss << "magic_number[2]:" << payload.magic_number[2] << std::endl;
-  ss << "magic_number[3]:" << payload.magic_number[3] << std::endl;
+  ss << "magic_number[0]: 0x" << std::hex << payload.magic_number[0] << std::endl;
+  ss << "magic_number[1]: 0x" << std::hex << payload.magic_number[1] << std::endl;
+  ss << "magic_number[2]: 0x" << std::hex << payload.magic_number[2] << std::endl;
+  ss << "magic_number[3]: 0x" << std::hex << payload.magic_number[3] << std::endl;
   return ss.str();
 }
 
