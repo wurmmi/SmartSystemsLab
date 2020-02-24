@@ -43,14 +43,8 @@
 #define MEM_OFFSET_DATA_IRQ (NUM_BYTE_TIMESTAMP_DATA + 0x10)
 
 /* IO Control (IOCTL) */
-#define IOC_MODE_POLLING 0
-#define IOC_MODE_BUFFER 1
-#define IOC_SET_PID 2
-#define IOC_SET_THRESHOLD 3
-#define IOC_CMD_SET_READ_POLLING _IO(4711, IOC_MODE_POLLING)
-#define IOC_CMD_SET_READ_BUFFER _IO(4711, IOC_MODE_BUFFER)
+#define IOC_SET_PID 0
 #define IOC_CMD_SET_PID _IO(4711, IOC_SET_PID)
-#define IOC_CMD_SET_THRESHOLD _IOW(4711, IOC_SET_THRESHOLD, uint32_t *)
 
 typedef struct
 {
@@ -74,8 +68,8 @@ struct data
 static irqreturn_t irq_handler(int nr, void *data_ptr)
 {
   struct data *dev = data_ptr;
-  // struct siginfo info;
-  // struct task_struct *t;
+  struct siginfo info;
+  struct task_struct *t;
 
   pr_info("INFRARED Interrupt occured.\n");
 
@@ -94,26 +88,22 @@ static irqreturn_t irq_handler(int nr, void *data_ptr)
     return IRQ_NONE;
   }
 
-  /* -------- TEMPORARY ----------------------------------------- */
-  return IRQ_HANDLED;
-  /* -------- TEMPORARY ----------------------------------------- */
-
   /* Send signal to user space */
-  // t = pid_task(find_vpid(dev->pid), PIDTYPE_PID);
-  // if (t == NULL)
-  // {
-  //   printk(KERN_ERR "A Task with PID %i does not exist.\n", dev->pid);
-  //   return IRQ_HANDLED;
-  // }
+  t = pid_task(find_vpid(dev->pid), PIDTYPE_PID);
+  if (t == NULL)
+  {
+    printk(KERN_ERR "A Task with PID %i does not exist.\n", dev->pid);
+    return IRQ_HANDLED;
+  }
 
-  // memset(&info, 0, sizeof(struct siginfo));
-  // info.si_signo = SIGNAL_EVENT;
-  // info.si_code = SI_QUEUE;
-  // info.si_int = 4711;
+  memset(&info, 0, sizeof(struct siginfo));
+  info.si_signo = SIGNAL_EVENT;
+  info.si_code = SI_QUEUE;
+  info.si_int = 4711;
 
-  // send_sig_info(SIGNAL_EVENT, &info, t);
+  send_sig_info(SIGNAL_EVENT, &info, t);
 
-  // return IRQ_HANDLED;
+  return IRQ_HANDLED;
 }
 
 /*
@@ -160,9 +150,33 @@ static int dev_read(struct file *filep, char *buf, size_t count,
   return count;
 }
 
+/*
+ * @brief This function gets executed on ioctl.
+ */
+static long dev_ioctl(struct file *filep, unsigned int cmd, unsigned long arg)
+{
+  struct data *dev = container_of(filep->private_data, struct data, misc);
+
+  switch (cmd)
+  {
+  case IOC_CMD_SET_PID:
+    /* Get the PID of the currently executing process.
+     * The `current` variable is defined in linux/sched/signal.h */
+    dev->pid = task_pid_nr(current);
+    pr_info("dev_ioctl: Set current PID to %i.\n", dev->pid);
+    break;
+  default:
+    /* it seems like ioctl is also called for all invocations of fread with cmd 0x5041 (TCGETS) */
+    // pr_info("dev_ioctl: Unknown cmd (%u). Exit.\n", cmd);
+    break;
+  }
+  return 0;
+}
+
 static const struct file_operations dev_fops = {
     .owner = THIS_MODULE,
-    .read = dev_read};
+    .read = dev_read,
+    .unlocked_ioctl = dev_ioctl};
 
 static int dev_probe(struct platform_device *pdev)
 {
@@ -206,8 +220,6 @@ static int dev_probe(struct platform_device *pdev)
 
   /* Enable interrupt generation in FPGA device */
   // iowrite32(0x3, dev->regs + MEM_OFFSET_BUF_IEN);
-  /* Enable buffer 0 */
-  // iowrite32(0x1, dev->regs + MEM_OFFSET_BUF_CTRL_STATUS);
 
   dev_info(&pdev->dev, "Infrared (IR) sensor driver loaded!");
 

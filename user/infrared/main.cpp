@@ -1,9 +1,13 @@
 #include "fpga.h"
 
-#include <mqtt/client.h>
 #include <libfpgaregion.h>
 
+#include <signal.h>
+#include <sys/ioctl.h>
+
+#include <thread>
 #include <iostream>
+#include <cstring>
 #include <string>
 #include <chrono>
 #include <optional>
@@ -11,15 +15,51 @@
 
 using namespace std::literals::chrono_literals;
 
+static const std::string CHARACTER_DEVICE = "/dev/infrared";
+
+#define IOC_SET_PID 0
+#define IOC_CMD_SET_PID _IO(4711, IOC_SET_PID)
+
+/* Event specific defines */
+#define EVENT_SIGNAL_NR 12 // (SIGUSR2)
+
 struct INFRARED
 {
   uint32_t timestamp[256];
   uint32_t magic_number[4];
 } __attribute__((packed));
 
+static void interrupt_handler(int, siginfo_t *, void *)
+{
+  std::cout << "INFRARED An interrupt occured! :)" << std::endl;
+}
+
+void setup_interrupt_signalling()
+{
+  auto fd = fopen(CHARACTER_DEVICE.c_str(), "rb");
+  if (!fd)
+  {
+    std::cerr << "Failed to open character device '" << CHARACTER_DEVICE << "'" << std::endl;
+    return;
+  }
+
+  if (ioctl(fileno(fd), IOC_CMD_SET_PID) < 0)
+  {
+    std::cerr << "Failed to set PID: " << strerror(errno) << std::endl;
+    fclose(fd);
+    return;
+  }
+
+  fclose(fd);
+
+  struct sigaction sig;
+  sig.sa_sigaction = interrupt_handler;
+  sig.sa_flags = SA_SIGINFO;
+  sigaction(EVENT_SIGNAL_NR, &sig, NULL);
+}
+
 std::optional<INFRARED> readFromCDev()
 {
-  static const std::string CHARACTER_DEVICE = "/dev/infrared";
 
   INFRARED results;
 
@@ -72,6 +112,7 @@ int main()
     return -1;
   }
 
+  setup_interrupt_signalling();
   while (1)
   {
     std::this_thread::sleep_for(1000ms);
