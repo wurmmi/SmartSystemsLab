@@ -28,7 +28,8 @@
 
 #define SIGNAL_EVENT 12 // User space has to listen for this event number (SIGUSR2)
 
-#define NUM_BYTE_TIMESTAMP_DATA (256 * sizeof(uint32_t))
+#define NUM_TIMESTAMPS 256
+#define NUM_BYTE_TIMESTAMP_DATA (NUM_TIMESTAMPS * sizeof(uint32_t))
 #define NUM_BYTE_MAGIC_NRS (4 * sizeof(uint32_t))
 #define NUM_BYTE_IRQS_ACTIVE (sizeof(uint32_t))
 
@@ -53,7 +54,7 @@
 
 typedef struct
 {
-  uint32_t timestamp[256];
+  uint32_t timestamp[NUM_TIMESTAMPS];
   uint32_t magic_number[4];
 } __attribute__((packed)) buffer_t;
 
@@ -79,8 +80,7 @@ static irqreturn_t irq_handler(int nr, void *data_ptr)
   pr_info("INFRARED Interrupt occured.\n");
 
   /* Determine which interrupt occured */
-  // dev->irqs_active = ioread32(dev->regs + MEM_OFFSET_DATA_IRQ);
-  dev->irqs_active = 1;
+  dev->irqs_active = ioread32(dev->regs + MEM_OFFSET_DATA_IRQ);
 
   if (dev->irqs_active == 0x1)
   {
@@ -140,42 +140,16 @@ static int dev_read(struct file *filep, char *buf, size_t count,
   if ((*offp + count) > SIZEOF_DATA_T)
     count = SIZEOF_DATA_T - *offp;
 
-  pr_info("INFRARED Reading. offp=%lli, count=%i", *offp, count);
-
-  bool debug = false;
-
   // Read timestamps from FPGA RAM
-  for (i = 0; i < 256; i++)
+  for (i = 0; i < NUM_TIMESTAMPS; i++)
   {
-    if (debug)
-    {
-      dev->buffer_data.timestamp[i] = i;
-    }
-    else
-    {
-      dev->buffer_data.timestamp[i] = ioread32(dev->regs + i * 4);
-    }
+    dev->buffer_data.timestamp[i] = ioread32(dev->regs + i * 4);
   }
 
-  if (debug)
-  {
-    dev->buffer_data.magic_number[0] = 0x1111;
-    dev->buffer_data.magic_number[1] = 0x2222;
-    dev->buffer_data.magic_number[2] = 0x3333;
-    dev->buffer_data.magic_number[3] = 0x4444;
-  }
-  else
-  {
-    dev->buffer_data.magic_number[0] = ioread32(dev->regs + MEM_OFFSET_DATA_MAGIC_NR0);
-    dev->buffer_data.magic_number[1] = ioread32(dev->regs + MEM_OFFSET_DATA_MAGIC_NR1);
-    dev->buffer_data.magic_number[2] = ioread32(dev->regs + MEM_OFFSET_DATA_MAGIC_NR2);
-    dev->buffer_data.magic_number[3] = ioread32(dev->regs + MEM_OFFSET_DATA_MAGIC_NR3);
-  }
-
-  pr_info("magic nr 0: 0x%x", dev->buffer_data.magic_number[0]);
-  pr_info("magic nr 1: 0x%x", dev->buffer_data.magic_number[1]);
-  pr_info("magic nr 2: 0x%x", dev->buffer_data.magic_number[2]);
-  pr_info("magic nr 3: 0x%x", dev->buffer_data.magic_number[3]);
+  dev->buffer_data.magic_number[0] = ioread32(dev->regs + MEM_OFFSET_DATA_MAGIC_NR0);
+  dev->buffer_data.magic_number[1] = ioread32(dev->regs + MEM_OFFSET_DATA_MAGIC_NR1);
+  dev->buffer_data.magic_number[2] = ioread32(dev->regs + MEM_OFFSET_DATA_MAGIC_NR2);
+  dev->buffer_data.magic_number[3] = ioread32(dev->regs + MEM_OFFSET_DATA_MAGIC_NR3);
 
   /* copy data from kernel space buffer into user space */
   if (count > 0)
