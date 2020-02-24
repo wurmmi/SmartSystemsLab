@@ -30,7 +30,6 @@ add wave -noupdate /tb_infrared/DUT/avs_s0_read
 add wave -noupdate /tb_infrared/DUT/avs_s0_readdata
 add wave -noupdate /tb_infrared/DUT/avs_s0_write
 add wave -noupdate /tb_infrared/DUT/avs_s0_writedata
-add wave -noupdate /tb_infrared/DUT/avs_s0_waitrequest
 add wave -noupdate /tb_infrared/DUT/ir_rx_i
 add wave -noupdate /tb_infrared/DUT/ir_tx_o
 add wave -noupdate /tb_infrared/DUT/done_recording_irq_o
@@ -58,8 +57,8 @@ add wave -noupdate /tb_infrared/DUT/timestamp_counter_inst/count_o
 add wave -noupdate /tb_infrared/DUT/timestamp_counter_inst/count
 add wave -noupdate /tb_infrared/DUT/timestamp_counter_inst/overflow
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {18827662 ps} 0} {{Cursor 2} {1940544 ps} 0}
-quietly wave cursor active 2
+WaveRestoreCursors {{Cursor 1} {27370000 ps} 0} {{Cursor 2} {1940544 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 324
 configure wave -valuecolwidth 164
 configure wave -justifyvalue left

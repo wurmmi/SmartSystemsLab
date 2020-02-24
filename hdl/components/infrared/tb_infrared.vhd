@@ -50,15 +50,16 @@ begin -- architecture bhv
   begin
     wait for reset_duration_c + 5 ns;
 
+    test_run : for test_nr in 0 to 1 loop
     -- Default sensor value (idle)
     ir_rx <= '1';
     wait for 200 * clk_cycle_duration_c;
 
     -- Generate infrared input signal
-    ir_rx_input : for i in 0 to 10 loop
+    ir_rx_input_1st : for i in 0 to 10 loop
       ir_rx <= not ir_rx;
       wait for 10 * clk_cycle_duration_c;
-    end loop;
+    end loop ir_rx_input_1st;
 
     -- Default sensor value (idle)
     ir_rx <= '1';
@@ -92,6 +93,9 @@ begin -- architecture bhv
         wait until clk  <= '0';
     end loop read_ctrl_status_data;
 
+    wait for 200 * clk_cycle_duration_c;
+
+    end loop test_run;
     wait;
   end process test_proc;
 
