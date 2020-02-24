@@ -14,7 +14,7 @@ using namespace std::literals::chrono_literals;
 struct INFRARED
 {
   uint32_t timestamp[256];
-  uint16_t magic_number[4];
+  uint32_t magic_number[4];
 } __attribute__((packed));
 
 std::optional<INFRARED> readFromCDev()
@@ -54,6 +54,9 @@ std::string formatDataToString(INFRARED payload)
   ss << "magic_number[1]: 0x" << std::hex << payload.magic_number[1] << std::endl;
   ss << "magic_number[2]: 0x" << std::hex << payload.magic_number[2] << std::endl;
   ss << "magic_number[3]: 0x" << std::hex << payload.magic_number[3] << std::endl;
+  for (int i = 0; i < 10; i++)
+    ss << "timestamp[" << i << "]=" << std::hex << payload.timestamp[i] << std::endl;
+
   return ss.str();
 }
 
