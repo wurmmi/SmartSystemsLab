@@ -57,7 +57,7 @@ add wave -noupdate /tb_infrared/DUT/timestamp_counter_inst/count_o
 add wave -noupdate /tb_infrared/DUT/timestamp_counter_inst/count
 add wave -noupdate /tb_infrared/DUT/timestamp_counter_inst/overflow
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {27370000 ps} 0} {{Cursor 2} {1940544 ps} 0}
+WaveRestoreCursors {{Cursor 1} {67763574 ps} 0} {{Cursor 2} {1940544 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 324
 configure wave -valuecolwidth 164
@@ -73,4 +73,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {47250 ns}
+WaveRestoreZoom {0 ps} {78750 ns}

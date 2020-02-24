@@ -51,50 +51,49 @@ begin -- architecture bhv
     wait for reset_duration_c + 5 ns;
 
     test_run : for test_nr in 0 to 1 loop
-    -- Default sensor value (idle)
-    ir_rx <= '1';
-    wait for 200 * clk_cycle_duration_c;
+      -- Default sensor value (idle)
+      ir_rx <= '1';
+      wait for 200 * clk_cycle_duration_c;
 
-    -- Generate infrared input signal
-    ir_rx_input_1st : for i in 0 to 10 loop
-      ir_rx <= not ir_rx;
+      -- Generate infrared input signal
+      ir_rx_input_1st : for i in 0 to 10 loop
+        ir_rx <= not ir_rx;
+        wait for 10 * clk_cycle_duration_c;
+      end loop ir_rx_input_1st;
+
+      -- Default sensor value (idle)
+      ir_rx <= '1';
+
+      -- Wait for interrupt generation (end of recieved IR sequence)
+      wait until irq = '1';
+      report "(MWURM) IRQ occured (end of received IR sequence)." severity note;
       wait for 10 * clk_cycle_duration_c;
-    end loop ir_rx_input_1st;
 
-    -- Default sensor value (idle)
-    ir_rx <= '1';
+      -- Read data (RAM)
+      read_ram_data : for i in 0 to 255 loop
+          avs_s0_address  <= std_logic_vector(to_unsigned(i, avs_s0_address'length));
+          avs_s0_read     <= '1';
 
-    -- Wait for interrupt generation (end of recieved IR sequence)
-    wait until irq = '1';
-    report "(MWURM) IRQ occured (end of received IR sequence)." severity note;
-    wait for 10 * clk_cycle_duration_c;
+          wait until clk  <= '1';
+          wait until clk  <= '0';
+          wait until clk  <= '1';
+          wait until clk  <= '0';
+      end loop read_ram_data;
 
-    -- Read data (RAM)
-    read_ram_data : for i in 0 to 255 loop
-        avs_s0_address  <= std_logic_vector(to_unsigned(i, avs_s0_address'length));
-        avs_s0_read     <= '1';
+      wait for 20 * clk_cycle_duration_c;
 
-        wait until clk  <= '1';
-        wait until clk  <= '0';
-        wait until clk  <= '1';
-        wait until clk  <= '0';
-    end loop read_ram_data;
+      -- Read data (control and status registers)
+      read_ctrl_status_data : for i in 256 to 261 loop
+          avs_s0_address  <= std_logic_vector(to_unsigned(i, avs_s0_address'length));
+          avs_s0_read     <= '1';
 
-    wait for 20 * clk_cycle_duration_c;
+          wait until clk  <= '1';
+          wait until clk  <= '0';
+          wait until clk  <= '1';
+          wait until clk  <= '0';
+      end loop read_ctrl_status_data;
 
-    -- Read data (control and status registers)
-    read_ctrl_status_data : for i in 256 to 266 loop
-        avs_s0_address  <= std_logic_vector(to_unsigned(i, avs_s0_address'length));
-        avs_s0_read     <= '1';
-
-        wait until clk  <= '1';
-        wait until clk  <= '0';
-        wait until clk  <= '1';
-        wait until clk  <= '0';
-    end loop read_ctrl_status_data;
-
-    wait for 200 * clk_cycle_duration_c;
-
+      wait for 200 * clk_cycle_duration_c;
     end loop test_run;
     wait;
   end process test_proc;
