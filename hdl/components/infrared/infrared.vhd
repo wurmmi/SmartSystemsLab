@@ -32,7 +32,6 @@ entity infrared is
     avs_s0_readdata    : out std_logic_vector(31 downto 0);
     avs_s0_write       : in  std_logic;
     avs_s0_writedata   : in  std_logic_vector(31 downto 0);
-    avs_s0_waitrequest : out std_logic;
 
     --! @}
     --! @name Infrared transceiver signals

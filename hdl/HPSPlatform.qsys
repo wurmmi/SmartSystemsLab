@@ -161,6 +161,14 @@
          type = "String";
       }
    }
+   element HPSPlatform
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
    element clk_0
    {
       datum _sortIndex
@@ -186,7 +194,7 @@
       }
       datum baseAddress
       {
-         value = "2048";
+         value = "8192";
          type = "String";
       }
    }
@@ -973,7 +981,7 @@
    start="hps_0.h2f_lw_axi_master"
    end="hmi.infrared_s0">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x0800" />
+  <parameter name="baseAddress" value="0x2000" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
