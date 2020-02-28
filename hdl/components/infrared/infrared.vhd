@@ -80,6 +80,7 @@ architecture rtl of infrared is
   signal store_timestamp : std_ulogic := '0';
   signal irq_active : std_ulogic  := '0';
   signal irq_reset  : std_ulogic  := '0';
+  signal start_replay : std_ulogic := '0';
 
   --! @}
   -----------------------------------------------------------------------------
@@ -97,6 +98,10 @@ architecture rtl of infrared is
   signal end_of_sequence : std_ulogic;
   signal ctrl_addr : unsigned(avs_s0_address'high downto ram_addr'high+1);
 
+  signal ir_tx : std_ulogic;
+  signal done_replay : std_ulogic;
+  signal replay_running: std_ulogic;
+
   --! @}
 
 begin  -- architecture rtl
@@ -106,7 +111,7 @@ begin  -- architecture rtl
   ------------------------------------------------------------------------------
 
   ir_rx_o <= ir_rx(ir_rx'high); -- mirror rx signal (for debug only)
-  ir_tx_o <= ir_rx(ir_rx'high); -- mirror rx signal (until tx is implemented)
+  ir_tx_o <= ir_tx;
   avs_s0_readdata <= std_logic_vector(ram_readdata) when ctrl_access = '0'
                      else std_logic_vector(ctrl_readdata);
   done_recording_irq_o <= irq_active;
@@ -155,6 +160,21 @@ begin  -- architecture rtl
         enable_i => end_of_sequence,
         overflow_o => recording_stopped,
         count_o  => open);
+
+  sender_inst : entity work.infrared_sender
+    port map (
+      clk_i                => clk_i,
+      rst_n_i              => rst_n_i,
+
+      avs_s0_address       => avs_s0_address,
+      avs_s0_read          => avs_s0_read,
+      avs_s0_readdata      => avs_s0_readdata,
+      avs_s0_write         => avs_s0_write,
+      avs_s0_writedata     => avs_s0_writedata,
+
+      ir_tx_o              => ir_tx,
+      replay_running_o     => replay_running,
+      done_replay_o        => done_replay);
 
   ------------------------------------------------------------------------------
   -- Registers

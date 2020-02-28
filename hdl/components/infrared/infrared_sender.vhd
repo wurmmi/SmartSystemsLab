@@ -46,8 +46,8 @@ entity infrared_sender is
 
     --! Done replaying of IR sequence
     done_replay_o : out std_logic;
-    --! Start replay of IR sequence
-    start_replay_i : in std_logic);
+    --! Replay of IR sequence running
+    replay_running_o : out std_logic);
 
   --! @}
 
@@ -74,6 +74,7 @@ architecture rtl of infrared_sender is
   signal ram_readdata : timestamp_t := (others => '0');
   signal ram_addr : unsigned(7 downto 0) := (others => '0');
 
+  signal start_replay : std_ulogic;
   signal replay_done : std_ulogic;
   signal replay_running : std_ulogic;
   signal ir_tx : std_ulogic;
@@ -97,6 +98,7 @@ begin  -- architecture rtl
   ------------------------------------------------------------------------------
 
   done_replay_o <= replay_done;
+  replay_running_o <= replay_running;
   ir_tx_o <= ir_tx;
 
   -----------------------------------------------------------------------------
@@ -140,7 +142,7 @@ begin  -- architecture rtl
     elsif rising_edge(clk_i) then
       -- Defaults
 
-      if start_replay_i = '1' and replay_running = '0' then
+      if start_replay = '1' and replay_running = '0' then
         replay_running <= '1';
         replay_done <= '0';
       end if;
@@ -171,5 +173,25 @@ begin  -- architecture rtl
       end if;
     end if;
   end process ram;
+
+  ctrl_interface : process (clk_i) is
+    procedure reset is
+    begin
+      start_replay <= '0';
+    end procedure reset;
+  begin -- process ctrl_interface
+      if rst_n_i = '0' then
+        reset;
+      elsif rising_edge(clk_i) then
+        if avs_s0_write = '1' then
+          -- addresses lower 255 are reserved for RAM
+          case (to_integer(unsigned(avs_s0_address))) is
+            when 256 =>
+              start_replay <= std_ulogic(avs_s0_writedata(0));
+            when others => null;
+          end case;
+        end if;
+      end if;
+  end process ctrl_interface;
 
 end architecture rtl;
