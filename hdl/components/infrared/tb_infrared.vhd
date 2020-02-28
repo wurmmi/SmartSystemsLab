@@ -50,7 +50,7 @@ begin -- architecture bhv
   begin
     wait for reset_duration_c + 5 ns;
 
-    test_run : for test_nr in 0 to 1 loop
+    test_run_record : for test_nr in 0 to 1 loop
       -- Default sensor value (idle)
       ir_rx <= '1';
       wait for 200 * clk_cycle_duration_c;
@@ -94,7 +94,30 @@ begin -- architecture bhv
       end loop read_ctrl_status_data;
 
       wait for 200 * clk_cycle_duration_c;
-    end loop test_run;
+    end loop test_run_record;
+
+    test_run_replay : for test_nr in 0 to 1 loop
+      -- Write data into replay RAM
+      write_ram_data : for i in 0 to 10 loop
+        avs_s0_address   <= std_logic_vector(to_unsigned(i, avs_s0_address'length));
+        avs_s0_writedata <= std_logic_vector(to_unsigned(i+10, avs_s0_writedata'length));
+        avs_s0_write     <= '1';
+
+        wait until clk  <= '1';
+        wait until clk  <= '0';
+        wait until clk  <= '1';
+        wait until clk  <= '0';
+      end loop write_ram_data;
+
+      wait for 50 * clk_cycle_duration_c;
+
+      avs_s0_address   <= std_logic_vector(to_unsigned(256, avs_s0_address'length));
+      avs_s0_writedata <= std_logic_vector(to_unsigned(1, avs_s0_writedata'length));
+      avs_s0_write     <= '1';
+
+
+    end loop test_run_replay;
+
     wait;
   end process test_proc;
 

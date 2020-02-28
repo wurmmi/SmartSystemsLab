@@ -74,10 +74,10 @@ architecture rtl of infrared_sender is
   signal ram_readdata : timestamp_t := (others => '0');
   signal ram_addr : unsigned(7 downto 0) := (others => '0');
 
-  signal start_replay : std_ulogic;
-  signal replay_done : std_ulogic;
-  signal replay_running : std_ulogic;
-  signal ir_tx : std_ulogic;
+  signal start_replay : std_ulogic := '0';
+  signal replay_done : std_ulogic := '0';
+  signal replay_running : std_ulogic := '0';
+  signal ir_tx : std_ulogic := '0';
 
   --! @}
   -----------------------------------------------------------------------------
@@ -100,14 +100,17 @@ begin  -- architecture rtl
   done_replay_o <= replay_done;
   replay_running_o <= replay_running;
   ir_tx_o <= ir_tx;
+  --avs_s0_readdata <= (others => '1');
 
   -----------------------------------------------------------------------------
   -- Signal Assignments
   -----------------------------------------------------------------------------
 
-  timestamp_match <= '1' when timestamp = ram_readdata else '0';
+  timestamp_match <= '1' when timestamp = ram_readdata and
+                              replay_running = '1'
+                         else '0';
   end_of_sequence <= '1' when to_integer(ram_addr) > 5 and
-                              ram_readdata = (others => '0')
+                              ram_readdata = to_unsigned(0, ram_addr'length)
                       else '0';
 
   -----------------------------------------------------------------------------
@@ -164,13 +167,11 @@ begin  -- architecture rtl
   begin
     if rising_edge(clk_i) then
       if avs_s0_write = '1' then
-        ram_data(to_integer(avs_s0_address(ram_addr'range))) <=
+        ram_data(to_integer(unsigned(avs_s0_address(ram_addr'range)))) <=
           unsigned(avs_s0_writedata);
-        end if;
-
-      if replay_running = '1' then
-        ram_readdata <= ram_data(to_integer(unsigned(avs_s0_address(ram_addr'range))));
       end if;
+
+      ram_readdata <= ram_data(to_integer(unsigned(ram_addr(ram_addr'range))));
     end if;
   end process ram;
 

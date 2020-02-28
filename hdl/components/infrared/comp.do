@@ -16,5 +16,6 @@ vlib work
 myvcom counter.vhd
 myvcom sync.vhd
 myvcom sync_single.vhd
+myvcom infrared_sender.vhd
 myvcom infrared.vhd
 myvcom tb_infrared.vhd

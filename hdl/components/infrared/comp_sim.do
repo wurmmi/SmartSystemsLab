@@ -17,6 +17,6 @@ echo "Sim: log signals"
 log -r /*
 
 echo "Sim: run ..."
-run 75 us
+run 100 us
 
 catch {do wave-restore.do}

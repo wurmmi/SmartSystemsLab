@@ -27,9 +27,9 @@ add wave -noupdate -radix decimal /tb_infrared/DUT/ram_addr
 add wave -noupdate -radix decimal /tb_infrared/DUT/ctrl_addr
 add wave -noupdate /tb_infrared/DUT/ctrl_access
 add wave -noupdate /tb_infrared/DUT/avs_s0_read
-add wave -noupdate /tb_infrared/DUT/avs_s0_readdata
+add wave -noupdate -radix decimal /tb_infrared/DUT/avs_s0_readdata
 add wave -noupdate /tb_infrared/DUT/avs_s0_write
-add wave -noupdate /tb_infrared/DUT/avs_s0_writedata
+add wave -noupdate -radix decimal /tb_infrared/DUT/avs_s0_writedata
 add wave -noupdate /tb_infrared/DUT/ir_rx_i
 add wave -noupdate /tb_infrared/DUT/ir_tx_o
 add wave -noupdate /tb_infrared/DUT/done_recording_irq_o
@@ -56,8 +56,29 @@ add wave -noupdate /tb_infrared/DUT/timestamp_counter_inst/overflow_o
 add wave -noupdate /tb_infrared/DUT/timestamp_counter_inst/count_o
 add wave -noupdate /tb_infrared/DUT/timestamp_counter_inst/count
 add wave -noupdate /tb_infrared/DUT/timestamp_counter_inst/overflow
+add wave -noupdate -divider Sender
+add wave -noupdate /tb_infrared/DUT/sender_inst/clk_i
+add wave -noupdate /tb_infrared/DUT/sender_inst/rst_n_i
+add wave -noupdate -radix decimal /tb_infrared/DUT/sender_inst/avs_s0_address
+add wave -noupdate /tb_infrared/DUT/sender_inst/avs_s0_read
+add wave -noupdate /tb_infrared/DUT/sender_inst/avs_s0_readdata
+add wave -noupdate /tb_infrared/DUT/sender_inst/avs_s0_write
+add wave -noupdate -radix decimal /tb_infrared/DUT/sender_inst/avs_s0_writedata
+add wave -noupdate /tb_infrared/DUT/sender_inst/ir_tx_o
+add wave -noupdate /tb_infrared/DUT/sender_inst/done_replay_o
+add wave -noupdate /tb_infrared/DUT/sender_inst/replay_running_o
+add wave -noupdate -radix decimal -childformat {{/tb_infrared/DUT/sender_inst/ram_readdata(31) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(30) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(29) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(28) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(27) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(26) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(25) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(24) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(23) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(22) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(21) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(20) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(19) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(18) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(17) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(16) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(15) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(14) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(13) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(12) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(11) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(10) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(9) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(8) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(7) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(6) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(5) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(4) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(3) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(2) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(1) -radix decimal} {/tb_infrared/DUT/sender_inst/ram_readdata(0) -radix decimal}} -subitemconfig {/tb_infrared/DUT/sender_inst/ram_readdata(31) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(30) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(29) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(28) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(27) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(26) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(25) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(24) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(23) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(22) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(21) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(20) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(19) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(18) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(17) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(16) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(15) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(14) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(13) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(12) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(11) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(10) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(9) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(8) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(7) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(6) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(5) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(4) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(3) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(2) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(1) {-height 16 -radix decimal} /tb_infrared/DUT/sender_inst/ram_readdata(0) {-height 16 -radix decimal}} /tb_infrared/DUT/sender_inst/ram_readdata
+add wave -noupdate -radix decimal /tb_infrared/DUT/sender_inst/ram_addr
+add wave -noupdate /tb_infrared/DUT/sender_inst/start_replay
+add wave -noupdate /tb_infrared/DUT/sender_inst/replay_done
+add wave -noupdate /tb_infrared/DUT/sender_inst/replay_running
+add wave -noupdate /tb_infrared/DUT/sender_inst/ir_tx
+add wave -noupdate /tb_infrared/DUT/sender_inst/timestamp
+add wave -noupdate /tb_infrared/DUT/sender_inst/end_of_sequence
+add wave -noupdate /tb_infrared/DUT/sender_inst/timestamp_match
+add wave -noupdate -radix decimal -expand /tb_infrared/DUT/sender_inst/ram_data
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {67763574 ps} 0} {{Cursor 2} {1940544 ps} 0}
+WaveRestoreCursors {{Cursor 1} {84120000 ps} 0} {{Cursor 2} {1955587 ps} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 324
 configure wave -valuecolwidth 164
@@ -73,4 +94,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {0 ps} {78750 ns}
+WaveRestoreZoom {82993843 ps} {87915731 ps}
