@@ -20,9 +20,9 @@ entity infrared_sender is
     --! @{
 
     --! System clock
-    clk_i   : in std_logic;
+    clk_i   : in std_ulogic;
     --! Asynchronous reset
-    rst_n_i : in std_logic;
+    rst_n_i : in std_ulogic;
 
     --! @}
     --! @name Avalon MM Bus
@@ -38,16 +38,16 @@ entity infrared_sender is
     --! @{
 
     --! IR transmitter signel
-    ir_tx_o : out std_logic;
+    ir_tx_o : out std_ulogic;
 
     --! @}
     --! @name Status signals
     --! @{
 
     --! Done replaying of IR sequence
-    done_replay_o : out std_logic;
+    done_replay_o : out std_ulogic;
     --! Replay of IR sequence running
-    replay_running_o : out std_logic);
+    replay_running_o : out std_ulogic);
 
   --! @}
 
@@ -100,7 +100,6 @@ begin  -- architecture rtl
   done_replay_o <= replay_done;
   replay_running_o <= replay_running;
   ir_tx_o <= ir_tx;
-  --avs_s0_readdata <= (others => '1');
 
   -----------------------------------------------------------------------------
   -- Signal Assignments
@@ -184,6 +183,10 @@ begin  -- architecture rtl
       if rst_n_i = '0' then
         reset;
       elsif rising_edge(clk_i) then
+        if end_of_sequence = '1' then
+          start_replay <= '0';
+        end if;
+
         if avs_s0_write = '1' then
           -- addresses lower 255 are reserved for RAM
           case (to_integer(unsigned(avs_s0_address))) is

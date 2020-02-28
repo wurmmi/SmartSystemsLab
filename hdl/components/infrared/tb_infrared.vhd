@@ -96,11 +96,11 @@ begin -- architecture bhv
       wait for 200 * clk_cycle_duration_c;
     end loop test_run_record;
 
-    test_run_replay : for test_nr in 0 to 1 loop
+    test_run_replay : for test_nr in 0 to 0 loop
       -- Write data into replay RAM
       write_ram_data : for i in 0 to 10 loop
         avs_s0_address   <= std_logic_vector(to_unsigned(i, avs_s0_address'length));
-        avs_s0_writedata <= std_logic_vector(to_unsigned(i+10, avs_s0_writedata'length));
+        avs_s0_writedata <= std_logic_vector(to_unsigned(i*10, avs_s0_writedata'length));
         avs_s0_write     <= '1';
 
         wait until clk  <= '1';
@@ -115,8 +115,11 @@ begin -- architecture bhv
       avs_s0_writedata <= std_logic_vector(to_unsigned(1, avs_s0_writedata'length));
       avs_s0_write     <= '1';
 
+      wait for 20 * clk_cycle_duration_c;
 
     end loop test_run_replay;
+
+    avs_s0_write     <= '0';
 
     wait;
   end process test_proc;
