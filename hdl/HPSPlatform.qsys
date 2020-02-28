@@ -161,6 +161,14 @@
          type = "String";
       }
    }
+   element HPSPlatform
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
    element clk_0
    {
       datum _sortIndex
@@ -177,12 +185,30 @@
          type = "int";
       }
    }
+   element hmi.infrared_s0
+   {
+      datum _lockedAddress
+      {
+         value = "1";
+         type = "boolean";
+      }
+      datum baseAddress
+      {
+         value = "8192";
+         type = "String";
+      }
+   }
    element hmi.leds_s1
    {
       datum _lockedAddress
       {
          value = "1";
          type = "boolean";
+      }
+      datum _tags
+      {
+         value = "";
+         type = "String";
       }
       datum baseAddress
       {
@@ -280,6 +306,22 @@
    name="hdc1000_i2c_0_i2c_serial"
    internal="hmi.hdc1000_i2c_0_i2c_serial" />
  <interface
+   name="hmi_infrared_ir_rx_i"
+   internal="hmi.infrared_ir_rx_i"
+   type="conduit"
+   dir="end" />
+ <interface
+   name="hmi_infrared_ir_rx_o"
+   internal="hmi.infrared_ir_rx_o"
+   type="conduit"
+   dir="end" />
+ <interface
+   name="hmi_infrared_ir_tx_o"
+   internal="hmi.infrared_ir_tx_o"
+   type="conduit"
+   dir="end" />
+ <interface name="hmi_infrared_irq_o" internal="hmi.infrared_irq_o" />
+ <interface
    name="hmi_subsystemapds9301_apdsinterrupt"
    internal="hmi.subsystemapds9301_apdsinterrupt"
    type="interrupt"
@@ -367,7 +409,7 @@
    internal="hmi.switches_external_connection"
    type="conduit"
    dir="end" />
- <module name="clk_0" kind="clock_source" version="18.1" enabled="1">
+ <module name="clk_0" kind="clock_source" version="19.1" enabled="1">
   <parameter name="clockFrequency" value="50000000" />
   <parameter name="clockFrequencyKnown" value="true" />
   <parameter name="inputClockFrequency" value="0" />
@@ -378,6 +420,9 @@
   <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone V" />
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="6" />
   <parameter name="AUTO_GENERATION_ID" value="0" />
+  <parameter name="AUTO_INFRARED_CLK_I_CLOCK_DOMAIN" value="1" />
+  <parameter name="AUTO_INFRARED_CLK_I_CLOCK_RATE" value="50000000" />
+  <parameter name="AUTO_INFRARED_CLK_I_RESET_DOMAIN" value="1" />
   <parameter name="AUTO_LEDS_CLK_CLOCK_DOMAIN" value="1" />
   <parameter name="AUTO_LEDS_CLK_CLOCK_RATE" value="50000000" />
   <parameter name="AUTO_LEDS_CLK_RESET_DOMAIN" value="1" />
@@ -398,9 +443,9 @@
   <parameter name="AUTO_SWITCHES_CLK_CLOCK_DOMAIN" value="1" />
   <parameter name="AUTO_SWITCHES_CLK_CLOCK_RATE" value="50000000" />
   <parameter name="AUTO_SWITCHES_CLK_RESET_DOMAIN" value="1" />
-  <parameter name="AUTO_UNIQUE_ID" value="HPSPlatform_hmi" />
+  <parameter name="AUTO_UNIQUE_ID" value="$${FILENAME}_hmi" />
  </module>
- <module name="hps_0" kind="altera_hps" version="18.1" enabled="1">
+ <module name="hps_0" kind="altera_hps" version="19.1" enabled="1">
   <parameter name="ABSTRACT_REAL_COMPARE_TEST" value="false" />
   <parameter name="ABS_RAM_MEM_INIT_FILENAME" value="meminit" />
   <parameter name="ACV_PHY_CLK_ADD_FR_PHASE" value="0.0" />
@@ -932,7 +977,16 @@
  </module>
  <connection
    kind="avalon"
-   version="18.1"
+   version="19.1"
+   start="hps_0.h2f_lw_axi_master"
+   end="hmi.infrared_s0">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x2000" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
+ <connection
+   kind="avalon"
+   version="19.1"
    start="hps_0.h2f_lw_axi_master"
    end="hmi.leds_s1">
   <parameter name="arbitrationPriority" value="1" />
@@ -941,7 +995,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="18.1"
+   version="19.1"
    start="hps_0.h2f_lw_axi_master"
    end="hmi.seven_segment_s0">
   <parameter name="arbitrationPriority" value="1" />
@@ -950,7 +1004,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="18.1"
+   version="19.1"
    start="hps_0.h2f_lw_axi_master"
    end="hmi.subsystemapds9301_s0">
   <parameter name="arbitrationPriority" value="1" />
@@ -959,7 +1013,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="18.1"
+   version="19.1"
    start="hps_0.h2f_lw_axi_master"
    end="hmi.subsystemhdc1000_s0">
   <parameter name="arbitrationPriority" value="1" />
@@ -968,7 +1022,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="18.1"
+   version="19.1"
    start="hps_0.h2f_lw_axi_master"
    end="hmi.subsystemmpu9250_s0">
   <parameter name="arbitrationPriority" value="1" />
@@ -977,7 +1031,7 @@
  </connection>
  <connection
    kind="avalon"
-   version="18.1"
+   version="19.1"
    start="hps_0.h2f_lw_axi_master"
    end="hmi.switches_s1">
   <parameter name="arbitrationPriority" value="1" />
@@ -986,76 +1040,93 @@
  </connection>
  <connection
    kind="clock"
-   version="18.1"
+   version="19.1"
    start="clk_0.clk"
    end="hps_0.f2h_axi_clock" />
  <connection
    kind="clock"
-   version="18.1"
+   version="19.1"
    start="clk_0.clk"
    end="hps_0.h2f_axi_clock" />
  <connection
    kind="clock"
-   version="18.1"
+   version="19.1"
    start="clk_0.clk"
    end="hps_0.h2f_lw_axi_clock" />
- <connection kind="clock" version="18.1" start="clk_0.clk" end="hmi.leds_clk" />
  <connection
    kind="clock"
-   version="18.1"
+   version="19.1"
+   start="clk_0.clk"
+   end="hmi.infrared_clk_i" />
+ <connection kind="clock" version="19.1" start="clk_0.clk" end="hmi.leds_clk" />
+ <connection
+   kind="clock"
+   version="19.1"
    start="clk_0.clk"
    end="hmi.seven_segment_clock" />
  <connection
    kind="clock"
-   version="18.1"
+   version="19.1"
    start="clk_0.clk"
    end="hmi.subsystemapds9301_clk" />
  <connection
    kind="clock"
-   version="18.1"
+   version="19.1"
    start="clk_0.clk"
    end="hmi.subsystemhdc1000_clk" />
  <connection
    kind="clock"
-   version="18.1"
+   version="19.1"
    start="clk_0.clk"
    end="hmi.subsystemmpu9250_clk" />
- <connection kind="clock" version="18.1" start="clk_0.clk" end="hmi.switches_clk" />
+ <connection kind="clock" version="19.1" start="clk_0.clk" end="hmi.switches_clk" />
  <connection
    kind="interrupt"
-   version="18.1"
+   version="19.1"
+   start="hps_0.f2h_irq0"
+   end="hmi.infrared_done_recording_irq">
+  <parameter name="irqNumber" value="1" />
+ </connection>
+ <connection
+   kind="interrupt"
+   version="19.1"
    start="hps_0.f2h_irq0"
    end="hmi.subsystemmpu9250_irq">
   <parameter name="irqNumber" value="0" />
  </connection>
  <connection
    kind="reset"
-   version="18.1"
+   version="19.1"
+   start="clk_0.clk_reset"
+   end="hmi.infrared_rst_n_i" />
+ <connection
+   kind="reset"
+   version="19.1"
    start="clk_0.clk_reset"
    end="hmi.leds_reset" />
  <connection
    kind="reset"
-   version="18.1"
+   version="19.1"
    start="clk_0.clk_reset"
    end="hmi.seven_segment_reset" />
  <connection
    kind="reset"
-   version="18.1"
+   version="19.1"
    start="clk_0.clk_reset"
    end="hmi.subsystemapds9301_reset" />
  <connection
    kind="reset"
-   version="18.1"
+   version="19.1"
    start="clk_0.clk_reset"
    end="hmi.subsystemhdc1000_reset" />
  <connection
    kind="reset"
-   version="18.1"
+   version="19.1"
    start="clk_0.clk_reset"
    end="hmi.subsystemmpu9250_reset" />
  <connection
    kind="reset"
-   version="18.1"
+   version="19.1"
    start="clk_0.clk_reset"
    end="hmi.switches_reset" />
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />

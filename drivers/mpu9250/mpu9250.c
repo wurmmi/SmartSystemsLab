@@ -26,7 +26,7 @@
 
 #define DRIVER_NAME "mpu9250"
 
-#define SIGNAL_EVENT 10 // User space has to listen for this event number
+#define SIGNAL_EVENT 10 // User space has to listen for this event number (SIGUSR1)
 
 #define NUM_BYTE_SENSOR_DATA (3 * 3 * sizeof(uint16_t))
 #define NUM_BYTE_TIMESTAMP (2 * sizeof(uint32_t))

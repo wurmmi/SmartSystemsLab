@@ -9,6 +9,14 @@
    categories="System" />
  <parameter name="bonusData"><![CDATA[bonusData 
 {
+   element infrared
+   {
+      datum _sortIndex
+      {
+         value = "6";
+         type = "int";
+      }
+   }
    element leds
    {
       datum _sortIndex
@@ -78,6 +86,38 @@
  <parameter name="timeStamp" value="0" />
  <parameter name="useTestBenchNamingPattern" value="false" />
  <instanceScript></instanceScript>
+ <interface
+   name="infrared_clk_i"
+   internal="infrared.clk_i"
+   type="clock"
+   dir="end" />
+ <interface
+   name="infrared_done_recording_irq"
+   internal="infrared.done_recording_irq"
+   type="interrupt"
+   dir="end" />
+ <interface
+   name="infrared_ir_rx_i"
+   internal="infrared.ir_rx_i"
+   type="conduit"
+   dir="end" />
+ <interface
+   name="infrared_ir_rx_o"
+   internal="infrared.ir_rx_o"
+   type="conduit"
+   dir="end" />
+ <interface
+   name="infrared_ir_tx_o"
+   internal="infrared.ir_tx_o"
+   type="conduit"
+   dir="end" />
+ <interface name="infrared_irq_o" internal="infrared.interrupt_sender" />
+ <interface
+   name="infrared_rst_n_i"
+   internal="infrared.rst_n_i"
+   type="reset"
+   dir="end" />
+ <interface name="infrared_s0" internal="infrared.s0" type="avalon" dir="end" />
  <interface name="leds_clk" internal="leds.clk" type="clock" dir="end" />
  <interface
    name="leds_external_connection"
@@ -198,7 +238,8 @@
    type="reset"
    dir="end" />
  <interface name="switches_s1" internal="switches.s1" type="avalon" dir="end" />
- <module name="leds" kind="altera_avalon_pio" version="18.1" enabled="1">
+ <module name="infrared" kind="infrared" version="1.0" enabled="1" />
+ <module name="leds" kind="altera_avalon_pio" version="19.1" enabled="1">
   <parameter name="bitClearingEdgeCapReg" value="false" />
   <parameter name="bitModifyingOutReg" value="false" />
   <parameter name="captureEdge" value="false" />
@@ -219,20 +260,6 @@
    version="1.0"
    enabled="1">
   <parameter name="AUTO_APDSINTERRUPT_INTERRUPTS_USED" value="0" />
-  <parameter name="AUTO_CLK_CLOCK_DOMAIN" value="5" />
-  <parameter name="AUTO_CLK_CLOCK_RATE" value="0" />
-  <parameter name="AUTO_CLK_RESET_DOMAIN" value="5" />
-  <parameter name="AUTO_DEVICE" value="5CSEMA5F31C6" />
-  <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone V" />
-  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="6" />
-  <parameter name="AUTO_GENERATION_ID" value="0" />
-  <parameter name="AUTO_UNIQUE_ID">$${FILENAME}_subsystemApds9301</parameter>
- </module>
- <module
-   name="subsystemHdc1000"
-   kind="subsystemHdc1000"
-   version="1.0"
-   enabled="1">
   <parameter name="AUTO_CLK_CLOCK_DOMAIN" value="7" />
   <parameter name="AUTO_CLK_CLOCK_RATE" value="0" />
   <parameter name="AUTO_CLK_RESET_DOMAIN" value="7" />
@@ -240,11 +267,11 @@
   <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone V" />
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="6" />
   <parameter name="AUTO_GENERATION_ID" value="0" />
-  <parameter name="AUTO_UNIQUE_ID">$${FILENAME}_subsystemHdc1000</parameter>
+  <parameter name="AUTO_UNIQUE_ID">subsystemHMI_subsystemApds9301</parameter>
  </module>
  <module
-   name="subsystemMpu9250"
-   kind="subsystemMpu9250"
+   name="subsystemHdc1000"
+   kind="subsystemHdc1000"
    version="1.0"
    enabled="1">
   <parameter name="AUTO_CLK_CLOCK_DOMAIN" value="9" />
@@ -254,10 +281,24 @@
   <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone V" />
   <parameter name="AUTO_DEVICE_SPEEDGRADE" value="6" />
   <parameter name="AUTO_GENERATION_ID" value="0" />
-  <parameter name="AUTO_MPUINT_INTERRUPTS_USED" value="0" />
-  <parameter name="AUTO_UNIQUE_ID">$${FILENAME}_subsystemMpu9250</parameter>
+  <parameter name="AUTO_UNIQUE_ID">subsystemHMI_subsystemHdc1000</parameter>
  </module>
- <module name="switches" kind="altera_avalon_pio" version="18.1" enabled="1">
+ <module
+   name="subsystemMpu9250"
+   kind="subsystemMpu9250"
+   version="1.0"
+   enabled="1">
+  <parameter name="AUTO_CLK_CLOCK_DOMAIN" value="11" />
+  <parameter name="AUTO_CLK_CLOCK_RATE" value="0" />
+  <parameter name="AUTO_CLK_RESET_DOMAIN" value="11" />
+  <parameter name="AUTO_DEVICE" value="5CSEMA5F31C6" />
+  <parameter name="AUTO_DEVICE_FAMILY" value="Cyclone V" />
+  <parameter name="AUTO_DEVICE_SPEEDGRADE" value="6" />
+  <parameter name="AUTO_GENERATION_ID" value="0" />
+  <parameter name="AUTO_MPUINT_INTERRUPTS_USED" value="0" />
+  <parameter name="AUTO_UNIQUE_ID">subsystemHMI_subsystemMpu9250</parameter>
+ </module>
+ <module name="switches" kind="altera_avalon_pio" version="19.1" enabled="1">
   <parameter name="bitClearingEdgeCapReg" value="false" />
   <parameter name="bitModifyingOutReg" value="false" />
   <parameter name="captureEdge" value="false" />

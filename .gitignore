@@ -14,6 +14,7 @@ drivers/**/.tmp_versions/
 user/**/*.o
 user/show_ip/show_ip
 user/streaming_sensors/streaming_sensors
+user/infrared/infrared
 
 # ModelSim temporary files
 work/
@@ -23,6 +24,7 @@ transcript
 
 # Quartus temporary files
 .qsys_edit/
+subsystemHMI/
 db/
 HPSPlatform/
 incremental_db/
