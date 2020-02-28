@@ -88,6 +88,7 @@ architecture rtl of infrared_sender is
   signal timestamp : timestamp_t;
   signal end_of_sequence : std_ulogic;
   signal timestamp_match : std_ulogic;
+  signal ctrl_access : std_ulogic;
 
   --! @}
 
@@ -110,7 +111,9 @@ begin  -- architecture rtl
                          else '0';
   end_of_sequence <= '1' when to_integer(ram_addr) > 5 and
                               ram_readdata = to_unsigned(0, ram_addr'length)
-                      else '0';
+                         else '0';
+  ctrl_access <= '1' when to_integer(unsigned(avs_s0_address)) > ram_t'length-1
+                     else '0';
 
   -----------------------------------------------------------------------------
   -- Instantiations
@@ -165,7 +168,7 @@ begin  -- architecture rtl
   ram : process (clk_i) is
   begin
     if rising_edge(clk_i) then
-      if avs_s0_write = '1' then
+      if avs_s0_write = '1' and ctrl_access = '0' then
         ram_data(to_integer(unsigned(avs_s0_address(ram_addr'range)))) <=
           unsigned(avs_s0_writedata);
       end if;
@@ -187,7 +190,7 @@ begin  -- architecture rtl
           start_replay <= '0';
         end if;
 
-        if avs_s0_write = '1' then
+        if avs_s0_write = '1' and ctrl_access = '1' then
           -- addresses lower 255 are reserved for RAM
           case (to_integer(unsigned(avs_s0_address))) is
             when 256 =>
